@@ -3,934 +3,1540 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Orchestration Dashboard v3</title>
+<title>⚡ Orchestrator — Live Agent Console</title>
 <style>
-:root{--bg:#0d1117;--card:#161b22;--border:#30363d;--text:#c9d1d9;--muted:#8b949e;--blue:#58a6ff;--green:#3fb950;--red:#f85149;--yellow:#d29922;--orange:#f0883e;--purple:#bc8cff}
+/* ═══════════════════════════════════════════════════════════════
+   ROOT — Terminal aesthetic, GitHub Dark palette, JetBrains Mono
+   ═══════════════════════════════════════════════════════════════ */
+:root {
+  --bg: #0d1117;
+  --bg-alt: #161b22;
+  --border: #30363d;
+  --text: #c9d1d9;
+  --text-dim: #8b949e;
+  --text-bright: #ffffff;
+  --blue: #58a6ff;
+  --green: #3fb950;
+  --red: #f85149;
+  --yellow: #d29922;
+  --orange: #f0883e;
+  --purple: #bc8cff;
+  --cyan: #39d2c0;
+  --font: 'JetBrains Mono','Cascadia Code','Fira Code','Consolas',monospace;
+  --font-ui: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --radius: 6px;
+  --transition: 150ms ease;
+}
+
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding:24px;min-width:900px}
-h1{font-size:22px;margin-bottom:2px;color:#fff}
-.sub{color:var(--muted);margin-bottom:20px;font-size:13px}
-/* ── Status bar ── */
-.sb{display:flex;gap:10px;align-items:center;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:14px;font-size:12px;flex-wrap:wrap}
-.dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0}
-.dot.g{background:var(--green)}.dot.r{background:var(--red)}.dot.y{background:var(--yellow)}
-.pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;white-space:nowrap}
-.pill.g{background:rgba(63,185,80,.15);color:var(--green)}
-.pill.r{background:rgba(248,81,73,.15);color:var(--red)}
-.pill.b{background:rgba(88,166,255,.15);color:var(--blue)}
-.pill.y{background:rgba(210,153,34,.15);color:var(--yellow)}
-.pill.p{background:rgba(188,140,255,.15);color:var(--purple)}
-/* ── Toggles ── */
-.tog{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);cursor:pointer;user-select:none}
-.tog .lbl{font-weight:500;white-space:nowrap}
-.sw{position:relative;width:34px;height:18px;background:var(--border);border-radius:9px;transition:.15s;flex-shrink:0}
-.sw.on{background:var(--green)}
-.sw::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;background:#fff;border-radius:50%;transition:.15s}
-.sw.on::after{left:18px}
-/* ── Tabs ── */
-.tabs{display:flex;gap:0;margin-bottom:14px;border-bottom:1px solid var(--border)}
-.tbp{padding:7px 14px;font-size:13px;cursor:pointer;border-bottom:2px solid transparent;color:var(--muted)}
-.tbp.a{color:#fff;border-bottom-color:var(--blue)}
-.sec{display:none}.sec.a{display:block}
-/* ── Cards ── */
-.card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px}
-.card h2{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:10px}
-/* ── Grid stats ── */
-.gr{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:12px}
-.st{text-align:center}
-.st .v{font-size:26px;font-weight:700;color:#fff}
-.st .l{font-size:11px;color:var(--muted);margin-top:2px}
-/* ── Tables ── */
-.tw{max-height:480px;overflow-y:auto}
-table{width:100%;border-collapse:collapse;font-size:12px}
-th{text-align:left;padding:5px 7px;color:var(--muted);border-bottom:1px solid var(--border);font-weight:500;position:sticky;top:0;background:var(--card);z-index:1;cursor:pointer;user-select:none}
-th:hover{color:#fff}
-td{padding:5px 7px;border-bottom:1px solid var(--border);vertical-align:middle}
-tr:hover td{background:rgba(88,166,255,.03)}
-tr.dim td{opacity:.4}
-/* ── Badges ── */
-.b{display:inline-block;padding:1px 5px;border-radius:8px;font-size:10px;font-weight:600}
-.b-act{background:rgba(63,185,80,.15);color:var(--green)}
-.b-brk{background:rgba(248,81,73,.15);color:var(--red)}
-.b-rem{background:rgba(139,148,158,.15);color:var(--muted)}
-.b-dis{background:rgba(248,81,73,.2);color:var(--red);border:1px solid rgba(248,81,73,.3)}
-.b-free{background:rgba(88,166,255,.15);color:var(--blue)}
-.b-sub{background:rgba(210,153,34,.15);color:var(--yellow)}
-.b-payg{background:rgba(248,81,73,.15);color:var(--red)}
-.b-t1{background:rgba(63,185,80,.2);color:var(--green)}
-.b-t2{background:rgba(88,166,255,.2);color:var(--blue)}
-.b-t3{background:rgba(139,148,158,.2);color:var(--muted)}
-/* ── Buttons ── */
-.btn{background:var(--blue);color:#fff;border:none;padding:3px 8px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:500}
-.btn:hover{opacity:.85}
-.btn-g{background:var(--green);color:#000}
-.btn-r{background:var(--red)}
-.btn-y{background:var(--yellow);color:#000}
-.btn-m{background:var(--muted);color:#000}
-.btn-p{background:var(--purple)}
-.btn-xs{padding:1px 6px;font-size:10px}
-/* ── Inputs ── */
-.inp{background:#0d1117;color:var(--text);border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-size:12px;font-family:inherit;width:100%}
-.inp:focus{border-color:var(--blue);outline:none}
-.inp-s{width:auto;min-width:80px}
-textarea.inp{min-height:50px;resize:vertical}
-select.inp{cursor:pointer}
-/* ── Filter bar ── */
-.flt{display:flex;gap:6px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
-.flt label{font-size:11px;color:var(--muted)}
-/* ── Modals ── */
-.mod{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:100;overflow:auto;padding:30px}
-.mod.open{display:block}
-.mi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;max-width:960px;margin:0 auto}
-.mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-.mh h2{font-size:16px;color:#fff;text-transform:none;letter-spacing:0}
-/* ── Form layout ── */
-.fr{display:grid;grid-template-columns:160px 1fr;gap:10px;margin-bottom:8px;align-items:start}
-.fl{font-size:11px;color:var(--muted);padding-top:5px;text-transform:uppercase;letter-spacing:.3px}
-.fv{font-size:12px}
-/* ── Stars ── */
-.stars{color:var(--yellow);letter-spacing:1px;font-size:13px;cursor:pointer}
-/* ── Capabilities ── */
-.caps{display:flex;gap:10px;flex-wrap:wrap}
-.cap{display:flex;align-items:center;gap:4px;font-size:11px}
-/* ── Tags ── */
-.tag{display:inline-block;background:rgba(88,166,255,.1);color:var(--blue);padding:1px 6px;border-radius:10px;font-size:10px;margin:1px}
-/* ── Toast ── */
-.toast{position:fixed;bottom:20px;right:20px;padding:8px 16px;border-radius:6px;font-size:12px;z-index:200;transition:.3s;opacity:0;transform:translateY(8px);pointer-events:none}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--font);
+  font-size:13px;line-height:1.5;display:flex;flex-direction:column;
+  min-width:1280px;overflow:hidden
+}
+/* Smooth scrollbar */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--text-dim)}
+
+/* ═══════════════════════════════════════════════════════════════
+   TERMINAL HEADER — fixed top bar
+   ═══════════════════════════════════════════════════════════════ */
+.term-header{
+  display:flex;align-items:center;padding:6px 16px;
+  background:var(--bg-alt);border-bottom:1px solid var(--border);
+  flex-shrink:0;gap:12px;user-select:none
+}
+.term-header .logo{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:700;color:var(--text-bright)}
+.term-header .logo span{color:var(--blue)}
+.term-header .logo .badge{font-size:9px;background:var(--blue);color:#000;padding:1px 5px;border-radius:3px;font-weight:600}
+.term-header .sep{width:1px;height:18px;background:var(--border)}
+.term-header .status-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.term-header .status-dot.on{background:var(--green);box-shadow:0 0 6px var(--green)}
+.term-header .status-dot.off{background:var(--red)}
+.term-header .status-text{font-size:11px;color:var(--text-dim)}
+.term-header .stats{display:flex;gap:14px;margin-left:auto;font-size:10px;color:var(--text-dim)}
+.term-header .stats .stat{display:flex;align-items:center;gap:3px}
+.term-header .stats .stat .num{color:var(--text-bright);font-weight:600}
+.term-header .stats .stat .num.active{color:var(--green)}
+.term-header .stats .stat .num.idle{color:var(--yellow)}
+.term-header .stats .stat .num.fail{color:var(--red)}
+
+/* ═══════════════════════════════════════════════════════════════
+   TAB BAR — CLI-style
+   ═══════════════════════════════════════════════════════════════ */
+.tab-bar{
+  display:flex;gap:0;flex-shrink:0;
+  background:var(--bg);border-bottom:1px solid var(--border);
+  padding:0 12px
+}
+.tab-btn{
+  padding:8px 16px;font-size:12px;font-family:var(--font);
+  cursor:pointer;border:none;background:transparent;
+  color:var(--text-dim);border-bottom:2px solid transparent;
+  transition:var(--transition);display:flex;align-items:center;gap:5px
+}
+.tab-btn:hover{color:var(--text);background:rgba(88,166,255,.04)}
+.tab-btn.active{color:var(--text-bright);border-bottom-color:var(--blue)}
+.tab-btn .count{
+  font-size:10px;background:var(--border);padding:0 5px;border-radius:8px;
+  color:var(--text-dim)
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MAIN CONTENT AREA
+   ═══════════════════════════════════════════════════════════════ */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.tab-pane{display:none;flex:1;overflow-y:auto;padding:16px}
+.tab-pane.active{display:flex;flex-direction:column}
+
+/* ═══════════════════════════════════════════════════════════════
+   DISCONNECTED BANNER
+   ═══════════════════════════════════════════════════════════════ */
+.disconnected-banner{
+  display:none;background:rgba(248,81,73,.12);color:var(--red);
+  text-align:center;padding:4px;font-size:11px;font-family:var(--font-ui);
+  border-bottom:1px solid rgba(248,81,73,.2);flex-shrink:0
+}
+.disconnected-banner.show{display:block}
+
+/* ═══════════════════════════════════════════════════════════════
+   HOME — Activity Feed (terminal scroll)
+   ═══════════════════════════════════════════════════════════════ */
+.home-layout{display:flex;flex-direction:column;flex:1;gap:12px}
+.home-top{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.term-card{
+  background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius);
+  padding:12px 14px
+}
+.term-card .card-label{font-size:9px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-dim);margin-bottom:4px}
+.term-card .card-value{font-size:22px;font-weight:700;color:var(--text-bright);font-family:var(--font)}
+.term-card .card-value.g{color:var(--green)}
+.term-card .card-value.r{color:var(--red)}
+.term-card .card-value.y{color:var(--yellow)}
+.term-card .card-value.b{color:var(--blue)}
+.term-card .card-sub{font-size:10px;color:var(--text-dim);margin-top:2px}
+
+.activity-feed-wrap{flex:1;display:flex;flex-direction:column;min-height:0}
+.activity-feed-header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:4px 0 8px;flex-shrink:0
+}
+.activity-feed-header .title{font-size:11px;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px}
+.activity-feed-header .controls{display:flex;gap:8px}
+.activity-feed-header .controls label{font-size:10px;color:var(--text-dim);display:flex;align-items:center;gap:4px;cursor:pointer}
+.activity-feed-header .controls label input[type=checkbox]{accent-color:var(--green);width:12px;height:12px}
+.activity-feed-header .controls select{background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:3px;font-size:10px;font-family:var(--font);padding:1px 4px;cursor:pointer}
+
+.activity-feed{
+  flex:1;overflow-y:auto;background:var(--bg);border:1px solid var(--border);
+  border-radius:var(--radius);padding:0;font-size:12px;line-height:1.6;min-height:100px;
+  font-family:var(--font)
+}
+.activity-feed .feed-entry{
+  display:flex;gap:8px;padding:2px 12px;border-bottom:1px solid rgba(48,54,61,.3);
+  animation:fadeIn .15s ease
+}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-2px)}to{opacity:1;transform:translateY(0)}}
+.activity-feed .feed-entry:hover{background:rgba(88,166,255,.03)}
+.activity-feed .feed-entry .ts{color:var(--text-dim);flex-shrink:0;font-size:10px;width:130px;opacity:.7}
+.activity-feed .feed-entry .lvl{flex-shrink:0;width:44px;font-size:10px;font-weight:600;text-transform:uppercase}
+.activity-feed .feed-entry .lvl.info{color:var(--blue)}
+.activity-feed .feed-entry .lvl.warn{color:var(--yellow)}
+.activity-feed .feed-entry .lvl.error{color:var(--red)}
+.activity-feed .feed-entry .lvl.debug{color:var(--text-dim)}
+.activity-feed .feed-entry .lvl.success{color:var(--green)}
+.activity-feed .feed-entry .msg{color:var(--text);word-break:break-word}
+.activity-feed .feed-empty{color:var(--text-dim);text-align:center;padding:40px 20px;font-size:12px;line-height:2}
+.activity-feed .feed-empty .big{font-size:32px;display:block;margin-bottom:8px}
+.activity-feed .feed-loading{text-align:center;padding:20px;color:var(--text-dim)}
+.activity-feed .feed-loading .spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ═══════════════════════════════════════════════════════════════
+   AGENTS TAB
+   ═══════════════════════════════════════════════════════════════ */
+.agent-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:10px}
+.agent-card{
+  background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius);
+  padding:12px;cursor:pointer;transition:var(--transition)
+}
+.agent-card:hover{border-color:var(--blue)}
+.agent-card .top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.agent-card .name{font-size:13px;font-weight:600;color:var(--text-bright)}
+.agent-card .status-badge{font-size:10px;padding:1px 6px;border-radius:8px;font-weight:600}
+.agent-card .status-badge.active{background:rgba(63,185,80,.15);color:var(--green)}
+.agent-card .status-badge.blocked{background:rgba(210,153,34,.15);color:var(--yellow)}
+.agent-card .status-badge.failed{background:rgba(248,81,73,.15);color:var(--red)}
+.agent-card .status-badge.done{background:rgba(139,148,158,.15);color:var(--text-dim)}
+.agent-card .info{font-size:11px;color:var(--text-dim);line-height:1.7}
+.agent-card .info .row{display:flex;gap:6px}
+.agent-card .info .label{color:var(--text-dim);width:60px;flex-shrink:0;opacity:.7}
+.agent-card .info .value{color:var(--text)}
+.agent-card .depth-bar{display:flex;gap:2px;margin-top:4px}
+.agent-card .depth-bar .seg{width:8px;height:4px;border-radius:2px;background:var(--border);transition:var(--transition)}
+.agent-card .depth-bar .seg.filled{background:var(--green)}
+.agent-card .depth-bar .seg.filled.deep{background:var(--blue)}
+.agent-card .depth-bar .seg.filled.deepest{background:var(--yellow)}
+.agent-card .project-name{font-size:10px;color:var(--blue);font-family:var(--font)}
+.agent-empty{text-align:center;padding:60px 20px;color:var(--text-dim);font-size:13px;line-height:2}
+.agent-empty .big{font-size:40px;display:block;margin-bottom:12px}
+
+/* ═══════════════════════════════════════════════════════════════
+   PROJECTS TAB
+   ═══════════════════════════════════════════════════════════════ */
+.proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:10px}
+.proj-card{
+  background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius);
+  padding:12px;cursor:pointer;transition:var(--transition)
+}
+.proj-card:hover{border-color:var(--green)}
+.proj-card .top{display:flex;justify-content:space-between;margin-bottom:6px}
+.proj-card .proj-name{font-size:13px;font-weight:600;color:var(--text-bright)}
+.proj-card .proj-meta{font-size:10px;color:var(--text-dim)}
+.proj-card .proj-meta span{margin-right:10px}
+.proj-card .proj-badges{display:flex;gap:4px;margin-top:4px}
+.proj-card .proj-badges .badge{font-size:9px;padding:1px 5px;border-radius:8px;font-weight:600}
+.proj-card .proj-last{font-size:10px;color:var(--text-dim);margin-top:4px;font-family:var(--font-ui)}
+.proj-card .proj-last .hl{color:var(--blue)}
+
+/* Project detail */
+.proj-detail{display:none;flex-direction:column;flex:1}
+.proj-detail.show{display:flex}
+.proj-detail .back-bar{display:flex;align-items:center;gap:10px;padding:6px 0 10px;flex-shrink:0}
+.proj-detail .back-bar .back-btn{background:transparent;border:1px solid var(--border);color:var(--text);padding:3px 10px;border-radius:4px;cursor:pointer;font-size:11px;font-family:var(--font);transition:var(--transition)}
+.proj-detail .back-bar .back-btn:hover{background:var(--border)}
+.proj-detail .back-bar .proj-title{font-size:15px;font-weight:700;color:var(--text-bright)}
+.proj-detail .back-bar .proj-actions{margin-left:auto;display:flex;gap:4px}
+.proj-detail .tabs-secondary{display:flex;gap:0;border-bottom:1px solid var(--border);flex-shrink:0}
+.proj-detail .tabs-secondary .stab{padding:5px 14px;font-size:11px;cursor:pointer;color:var(--text-dim);border-bottom:2px solid transparent;font-family:var(--font)}
+.proj-detail .tabs-secondary .stab.active{color:var(--text-bright);border-bottom-color:var(--blue)}
+.proj-detail .doc-area{flex:1;display:none;margin-top:10px;min-height:0}
+.proj-detail .doc-area.show{display:flex;flex-direction:column}
+.proj-detail .doc-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-shrink:0}
+.proj-detail .doc-toolbar .doc-name{font-size:11px;color:var(--text-dim)}
+.proj-detail .doc-toolbar .doc-actions{display:flex;gap:4px}
+.proj-detail textarea.doc-editor{flex:1;min-height:200px;resize:vertical;overflow:auto;white-space:pre;font-size:11px}
+.proj-detail .proj-sessions{overflow-y:auto}
+.proj-detail table{width:100%;border-collapse:collapse;font-size:11px}
+.proj-detail th{text-align:left;padding:4px 6px;color:var(--text-dim);border-bottom:1px solid var(--border);font-weight:500;position:sticky;top:0;background:var(--bg);z-index:1}
+.proj-detail td{padding:4px 6px;border-bottom:1px solid rgba(48,54,61,.4)}
+.proj-detail .file-list{display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+.proj-detail .file-item{display:flex;justify-content:space-between;align-items:center;padding:4px 8px;border-bottom:1px solid rgba(48,54,61,.3);font-size:11px}
+.proj-detail .file-item:hover{background:rgba(88,166,255,.03)}
+.proj-detail .agent-tree{font-size:11px;font-family:var(--font);line-height:1.8}
+.proj-detail .agent-tree .node{display:flex;gap:6px;padding:2px 0}
+.proj-detail .agent-tree .node .icon{flex-shrink:0;width:16px;text-align:center}
+.proj-detail .agent-tree .node .icon.g{color:var(--green)}
+.proj-detail .agent-tree .node .icon.r{color:var(--red)}
+.proj-detail .agent-tree .node .icon.y{color:var(--yellow)}
+.proj-detail .agent-tree .node .icon.dim{color:var(--text-dim)}
+
+/* ═══════════════════════════════════════════════════════════════
+   MODELS TAB (preserved from v3, tightened)
+   ═══════════════════════════════════════════════════════════════ */
+.models-wrap{display:flex;flex-direction:column;flex:1}
+.models-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px}
+.models-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px}
+.models-toolbar .left{display:flex;gap:6px;align-items:center}
+.models-toolbar .right{display:flex;gap:4px;align-items:center}
+.models-filters{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;align-items:center}
+.models-filters label{font-size:10px;color:var(--text-dim)}
+.models-table-wrap{flex:1;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius)}
+.models-table-wrap table{width:100%;border-collapse:collapse;font-size:11px}
+.models-table-wrap th{text-align:left;padding:5px 7px;color:var(--text-dim);border-bottom:1px solid var(--border);font-weight:500;position:sticky;top:0;background:var(--bg-alt);z-index:1;cursor:pointer;user-select:none}
+.models-table-wrap th:hover{color:var(--text-bright)}
+.models-table-wrap td{padding:4px 7px;border-bottom:1px solid rgba(48,54,61,.3)}
+.models-table-wrap tr:hover td{background:rgba(88,166,255,.02)}
+.models-table-wrap tr.dim td{opacity:.4}
+.models-table-wrap tr.dim td .btn{opacity:.5}
+.models-table-wrap .cost-badge{font-size:9px;padding:1px 5px;border-radius:8px;font-weight:600;white-space:nowrap}
+.models-table-wrap .cost-badge.free{background:rgba(88,166,255,.15);color:var(--blue)}
+.models-table-wrap .cost-badge.sub{background:rgba(210,153,34,.15);color:var(--yellow)}
+.models-table-wrap .cost-badge.payg{background:rgba(248,81,73,.15);color:var(--red)}
+.models-table-wrap .tier-badge{font-size:9px;padding:1px 5px;border-radius:8px;font-weight:600;white-space:nowrap}
+.models-table-wrap .tier-badge.t1{background:rgba(63,185,80,.2);color:var(--green)}
+.models-table-wrap .tier-badge.t2{background:rgba(88,166,255,.2);color:var(--blue)}
+.models-table-wrap .tier-badge.t3{background:rgba(139,148,158,.2);color:var(--text-dim)}
+.models-table-wrap .model-name{cursor:pointer}
+.models-table-wrap .model-name:hover{color:var(--blue);text-decoration:underline}
+
+/* ═══════════════════════════════════════════════════════════════
+   LOGS TAB
+   ═══════════════════════════════════════════════════════════════ */
+.logs-wrap{display:flex;flex-direction:column;flex:1}
+.logs-toolbar{display:flex;gap:8px;margin-bottom:8px;align-items:center;flex-wrap:wrap}
+.logs-toolbar select{background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:3px;font-size:10px;font-family:var(--font);padding:2px 6px;cursor:pointer}
+.logs-toolbar label{font-size:10px;color:var(--text-dim)}
+.logs-viewer{flex:1;overflow-y:auto;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:0;font-family:var(--font);font-size:11px;line-height:1.7}
+.logs-viewer .log-line{display:flex;gap:8px;padding:1px 10px;border-bottom:1px solid rgba(48,54,61,.15)}
+.logs-viewer .log-line:hover{background:rgba(88,166,255,.02)}
+.logs-viewer .log-line .ts{color:var(--text-dim);width:130px;flex-shrink:0;font-size:10px;opacity:.6}
+.logs-viewer .log-line .lv{width:40px;flex-shrink:0;font-size:10px;font-weight:600}
+.logs-viewer .log-line .lv.success{color:var(--green)}
+.logs-viewer .log-line .lv.info{color:var(--blue)}
+.logs-viewer .log-line .lv.warn{color:var(--yellow)}
+.logs-viewer .log-line .lv.error{color:var(--red)}
+.logs-viewer .log-line .lv.debug{color:var(--text-dim)}
+.logs-viewer .log-line .src{color:var(--purple);width:80px;flex-shrink:0}
+.logs-viewer .log-line .msg{color:var(--text)}
+.logs-empty{text-align:center;padding:40px;color:var(--text-dim)}
+
+/* ═══════════════════════════════════════════════════════════════
+   SETTINGS TAB
+   ═══════════════════════════════════════════════════════════════ */
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.settings-card{background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
+.settings-card h3{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim);margin-bottom:10px}
+.settings-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(48,54,61,.3)}
+.settings-row:last-child{border-bottom:none}
+.settings-row .sl{font-size:12px}
+.settings-row .sv{font-size:11px;color:var(--text-dim);font-family:var(--font)}
+.toggle-sw{position:relative;width:32px;height:16px;background:var(--border);border-radius:8px;cursor:pointer;transition:var(--transition);flex-shrink:0}
+.toggle-sw.on{background:var(--green)}
+.toggle-sw::after{content:'';position:absolute;top:2px;left:2px;width:12px;height:12px;background:var(--text-bright);border-radius:50%;transition:var(--transition)}
+.toggle-sw.on::after{left:18px}
+
+/* ═══════════════════════════════════════════════════════════════
+   STATUS BAR — fixed bottom
+   ═══════════════════════════════════════════════════════════════ */
+.status-bar{
+  display:flex;align-items:center;gap:12px;
+  padding:4px 16px;background:var(--bg-alt);
+  border-top:1px solid var(--border);flex-shrink:0;
+  font-size:10px;color:var(--text-dim);font-family:var(--font)
+}
+.status-bar .sb-dot{width:6px;height:6px;border-radius:50%;display:inline-block}
+.status-bar .sb-dot.on{background:var(--green)}
+.status-bar .sb-dot.off{background:var(--red)}
+.status-bar .sb-sep{width:1px;height:12px;background:var(--border)}
+.status-bar .sb-right{margin-left:auto;display:flex;gap:10px}
+.status-bar .sb-right .sb-item{display:flex;align-items:center;gap:3px}
+
+/* ═══════════════════════════════════════════════════════════════
+   MODAL
+   ═══════════════════════════════════════════════════════════════ */
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.75);z-index:100;padding:30px;overflow-y:auto}
+.modal-overlay.open{display:block}
+.modal-content{background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius);max-width:800px;margin:0 auto;padding:20px}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.modal-header h2{font-size:14px;color:var(--text-bright)}
+.modal-form .row{display:grid;grid-template-columns:140px 1fr;gap:8px;margin-bottom:6px;align-items:start}
+.modal-form .row label{font-size:10px;color:var(--text-dim);padding-top:4px;text-transform:uppercase;letter-spacing:.3px}
+.modal-form .row .val{font-size:12px}
+.modal-form input,.modal-form select,.modal-form textarea{background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:3px;padding:3px 6px;font-size:12px;font-family:var(--font);width:100%}
+.modal-form textarea{min-height:60px;resize:vertical}
+.modal-form input:focus,.modal-form select:focus{border-color:var(--blue);outline:none}
+
+/* ═══════════════════════════════════════════════════════════════
+   TOAST
+   ═══════════════════════════════════════════════════════════════ */
+.toast{
+  position:fixed;bottom:40px;right:20px;padding:6px 14px;border-radius:var(--radius);
+  font-size:11px;font-family:var(--font);z-index:200;
+  transition:all .25s ease;opacity:0;transform:translateY(10px);pointer-events:none
+}
 .toast.show{opacity:1;transform:translateY(0)}
-.toast.ok{background:var(--green);color:#000}
-.toast.err{background:var(--red);color:#fff}
-/* ── Allowlist picker ── */
-.alp{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:4px;max-height:280px;overflow-y:auto;padding:6px;background:#0d1117;border:1px solid var(--border);border-radius:6px;margin-bottom:10px}
-.ali{display:flex;align-items:center;gap:6px;padding:3px 6px;border-radius:4px;cursor:pointer;font-size:11px}
-.ali:hover{background:rgba(88,166,255,.08)}
-.ali input[type=checkbox]{accent-color:var(--green);flex-shrink:0}
-.ali .nm{font-weight:500}
-.ali .id{font-size:9px;color:var(--muted);font-family:monospace}
-/* ── Inline edit ── */
-.ie{cursor:pointer;border-bottom:1px dashed transparent;transition:.1s}
-.ie:hover{border-bottom-color:var(--blue);color:var(--blue)}
-/* ── Cost editor ── */
-.ced{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-/* ── Row actions ── */
-.ra{display:flex;gap:3px}
-/* ── Checkbox column ── */
-.chk{width:28px;text-align:center}
-/* ── Sort indicator ── */
-.si{margin-left:4px;font-size:9px}
+.toast.success{background:var(--green);color:#000}
+.toast.error{background:var(--red);color:var(--text-bright)}
+.toast.info{background:var(--blue);color:#000}
+
+/* ═══════════════════════════════════════════════════════════════
+   GENERIC HELPERS
+   ═══════════════════════════════════════════════════════════════ */
+.btn{background:transparent;border:1px solid var(--border);color:var(--text);padding:3px 8px;border-radius:4px;cursor:pointer;font-size:11px;font-family:var(--font);transition:var(--transition)}
+.btn:hover{background:var(--border)}
+.btn-primary{background:var(--blue);border-color:var(--blue);color:#000}
+.btn-primary:hover{opacity:.85}
+.btn-success{background:var(--green);border-color:var(--green);color:#000}
+.btn-success:hover{opacity:.85}
+.btn-danger{background:transparent;border-color:var(--red);color:var(--red)}
+.btn-danger:hover{background:rgba(248,81,73,.12)}
+.btn-warning{background:var(--yellow);border-color:var(--yellow);color:#000}
+.btn-warning:hover{opacity:.85}
+.btn-sm{padding:1px 6px;font-size:10px}
+input.search{background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:3px;padding:3px 8px;font-size:11px;font-family:var(--font);width:200px}
+input.search::placeholder{color:var(--text-dim);opacity:.5}
+input.search:focus{border-color:var(--blue);outline:none}
 </style>
 </head>
 <body>
-<h1>🎛️ Orchestration Dashboard</h1>
-<p class="sub">Model management · Routing control · Project configuration</p>
 
-<!-- ═══ STATUS BAR ═══ -->
-<div class="sb">
-  <span class="dot g" id="sdot"></span>
-  <span id="stxt">Connecting...</span>
-  <span class="pill g" id="fpill" style="display:none">FREE ONLY</span>
-  <span class="pill r" id="dpill" style="display:none">0 DISABLED</span>
-  <div style="margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:nowrap">
-    <div class="tog" onclick="togCfg('free_only_mode')"><span class="lbl">Free Only</span><div class="sw" id="fsw"></div></div>
-  </div>
-  <span style="font-size:10px;color:var(--muted)">Auto-refresh 30s</span>
+<!-- ═══════════════════ DISCONNECTED BANNER ═══════════════════ -->
+<div class="disconnected-banner" id="disconnected">
+  ⚠ Connection lost — reconnecting...
 </div>
 
-<!-- ═══ TABS ═══ -->
-<div class="tabs">
-  <div class="tbp a" data-tab="models">Models</div>
-  <div class="tbp" data-tab="projects">Projects</div>
-  <div class="tbp" data-tab="sessions">Sessions</div>
-  <div class="tbp" data-tab="prices">Prices</div>
-</div>
-
-<!-- ═══ MODELS TAB ═══ -->
-<div id="sec-models" class="sec a">
-  <div id="mstats" class="gr"></div>
-  <div class="card">
-    <div id="mlist"></div>
+<!-- ═══════════════════ STATUS BAR ═══════════════════ -->
+<div class="term-header" id="termHeader">
+  <div class="logo">⚡<span>ORCHESTRATOR</span><span class="badge">v4</span></div>
+  <div class="sep"></div>
+  <span class="status-dot on" id="hDot"></span>
+  <span class="status-text" id="hText">Connecting...</span>
+  <div class="sep"></div>
+  <div class="stats" id="hStats">
+    <div class="stat">Agents: <span class="num" id="sAgents">0</span></div>
+    <div class="stat">Active: <span class="num active" id="sActive">0</span></div>
+    <div class="stat">Models: <span class="num" id="sModels">—</span></div>
+    <div class="stat">Projects: <span class="num" id="sProjects">—</span></div>
+    <div class="stat">Logged: <span class="num" id="sSessions">—</span></div>
   </div>
 </div>
 
-<!-- ═══ PROJECTS TAB ═══ -->
-<div id="sec-projects" class="sec">
-  <div id="pstats" class="gr"></div>
-  <div id="parea">
-    <!-- Project list view -->
-    <div id="plist"></div>
-    <!-- Project detail view (hidden by default) -->
-    <div id="pdetail" style="display:none">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <div style="display:flex;gap:8px;align-items:center">
-          <button class="btn btn-m btn-xs" onclick="closeProjDetail()">← Back to Projects</button>
-          <span style="font-size:16px;font-weight:600;color:#fff" id="pd-name"></span>
-        </div>
-        <div style="display:flex;gap:6px">
-          <button class="btn btn-y btn-xs" onclick="openProjConfig()">⚙ Allowlist</button>
-          <button class="btn btn-xs" onclick="togProjFreeCur()">Toggle Free-Only</button>
+<!-- ═══════════════════ TAB BAR ═══════════════════ -->
+<div class="tab-bar" id="tabBar">
+  <button class="tab-btn active" data-tab="home">⌂ Home <span class="count" id="tbActivity">live</span></button>
+  <button class="tab-btn" data-tab="agents">■ Agents <span class="count" id="tbAgents">0</span></button>
+  <button class="tab-btn" data-tab="projects">◆ Projects <span class="count" id="tbProjects">0</span></button>
+  <button class="tab-btn" data-tab="models">⬡ Models <span class="count" id="tbModels">0</span></button>
+  <button class="tab-btn" data-tab="logs">≡ Logs</button>
+  <button class="tab-btn" data-tab="settings">⚙ Settings</button>
+</div>
+
+<!-- ═══════════════════ MAIN CONTENT ═══════════════════ -->
+<div class="main">
+
+<!-- ─── HOME: Activity Feed ─── -->
+<div class="tab-pane active" id="pane-home">
+  <div class="home-layout">
+    <div class="home-top" id="homeStats">
+      <div class="term-card"><div class="card-label">Agents Active</div><div class="card-value g" id="hcAgents">0</div><div class="card-sub">currently working</div></div>
+      <div class="term-card"><div class="card-label">Models Online</div><div class="card-value b" id="hcModels">—</div><div class="card-sub">agent-ready</div></div>
+      <div class="term-card"><div class="card-label">Projects</div><div class="card-value" id="hcProjects">—</div><div class="card-sub">registered</div></div>
+      <div class="term-card"><div class="card-label">Sessions Logged</div><div class="card-value" id="hcSessions">—</div><div class="card-sub">all time</div></div>
+    </div>
+    <div class="activity-feed-wrap">
+      <div class="activity-feed-header">
+        <div class="title">📡 Activity Feed (live)</div>
+        <div class="controls">
+          <label><input type="checkbox" id="feedAutoScroll" checked> Auto-scroll</label>
+          <select id="feedFilter">
+            <option value="">All levels</option>
+            <option value="info">info</option>
+            <option value="warn">warn</option>
+            <option value="error">error</option>
+            <option value="success">success</option>
+            <option value="debug">debug</option>
+          </select>
         </div>
       </div>
-      <!-- Doc tabs -->
-      <div style="display:flex;gap:0;margin-bottom:0;border-bottom:1px solid var(--border)" id="docTabs">
-        <div class="tbp a" data-dtab="state" onclick="switchDocTab('state')">📋 STATE</div>
-        <div class="tbp" data-dtab="roadmap" onclick="switchDocTab('roadmap')">🗺️ ROADMAP</div>
-        <div class="tbp" data-dtab="context" onclick="switchDocTab('context')">📖 CONTEXT</div>
-        <div class="tbp" data-dtab="notes" onclick="switchDocTab('notes')">📝 NOTES</div>
-        <div class="tbp" data-dtab="sessions" onclick="switchDocTab('sessions')">⚡ Sessions</div>
-        <div class="tbp" data-dtab="files" onclick="switchDocTab('files')">📁 Files</div>
-        <div class="tbp" data-dtab="agent" onclick="switchDocTab('agent')">🤖 Manager</div>
-      </div>
-      <!-- Editor area -->
-      <div id="docEditorArea" style="margin-top:12px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <span style="font-size:12px;color:var(--muted)" id="docFileName">STATE.md</span>
-          <div style="display:flex;gap:4px">
-            <button class="btn btn-xs" id="docEditBtn" onclick="toggleDocEdit()">✏️ Edit</button>
-            <button class="btn btn-g btn-xs" id="docSaveBtn" onclick="saveDoc()" style="display:none">💾 Save</button>
-            <button class="btn btn-m btn-xs" id="docCancelBtn" onclick="cancelDocEdit()" style="display:none">Cancel</button>
-          </div>
-        </div>
-        <textarea class="inp" id="docEditor" style="min-height:400px;font-family:monospace;font-size:12px;resize:vertical" disabled></textarea>
-        <div id="docPreview" class="card" style="min-height:400px;display:none;overflow-y:auto;font-size:13px;line-height:1.6"></div>
-      </div>
-      <!-- Sessions view -->
-      <div id="docSessionsArea" style="display:none;margin-top:12px">
-        <div class="tw"><table><tr><th>Date</th><th>Task</th><th>Model</th><th>Agent</th><th>Status</th><th>Duration</th></tr><tbody id="projSessionsBody"></tbody></table></div>
-      </div>
-      <!-- Files view -->
-      <div id="docFilesArea" style="display:none;margin-top:12px">
-        <div style="display:flex;gap:6px;margin-bottom:10px">
-          <input class="inp" id="newFileName" placeholder="filename.md" style="width:200px">
-          <button class="btn btn-g btn-xs" onclick="createDocFile()">+ Create File</button>
-        </div>
-        <div id="projFilesList"></div>
-      </div>
-      <!-- Manager session view -->
-      <div id="docAgentArea" style="display:none;margin-top:12px">
-        <div class="card">
-          <h2 style="margin-bottom:8px">🤖 Manager Session</h2>
-          <div id="managerInfo" style="font-size:13px">
-            <div class="fr"><div class="fl">Status</div><div class="fv" id="mgStatus"><span class="pill g">Active</span></div></div>
-            <div class="fr"><div class="fl">OpenClaw Session</div><div class="fv" id="mgSession">—</div></div>
-            <div class="fr"><div class="fl">Current Task</div><div class="fv" id="mgTask">—</div></div>
-            <div class="fr"><div class="fl">Model</div><div class="fv" id="mgModel">—</div></div>
-            <div class="fr"><div class="fl">Sub-agents</div><div class="fv" id="mgSubCount">0</div></div>
-          </div>
-        </div>
-        <div class="card">
-          <h2 style="margin-bottom:8px">🌳 Sub-Agent Tree</h2>
-          <div id="subAgentTree" style="font-size:12px;font-family:monospace;line-height:1.8">
-            <div style="color:var(--muted)">No active sub-agents.</div>
-          </div>
-        </div>
+      <div class="activity-feed" id="activityFeed">
+        <div class="feed-loading"><span class="spinner"></span>Connecting to stream...</div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ═══ SESSIONS TAB ═══ -->
-<div id="sec-sessions" class="sec">
-  <div class="card" id="scontent"></div>
+<!-- ─── AGENTS ─── -->
+<div class="tab-pane" id="pane-agents">
+  <div style="margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
+    <div class="title" style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim)">Agent Sessions</div>
+    <div style="display:flex;gap:6px;align-items:center">
+      <input class="search" id="agentSearch" placeholder="Search agents..." oninput="renderAgents()">
+    </div>
+  </div>
+  <div class="agent-grid" id="agentGrid"></div>
 </div>
 
-<!-- ═══ PRICES TAB ═══ -->
-<div id="sec-prices" class="sec">
-  <div class="card" id="prcontent"></div>
+<!-- ─── PROJECTS ─── -->
+<div class="tab-pane" id="pane-projects">
+  <div id="projListView">
+    <div style="margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
+      <div class="title" style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim)">Projects</div>
+      <div style="display:flex;gap:6px"><input class="search" id="projSearch" placeholder="Search projects..." oninput="renderProjects()"></div>
+    </div>
+    <div class="proj-grid" id="projGrid"></div>
+  </div>
+  <div class="proj-detail" id="projDetail">
+    <div class="back-bar">
+      <button class="back-btn" onclick="closeProjDetail()">← Back</button>
+      <span class="proj-title" id="pdTitle"></span>
+      <div class="proj-actions">
+        <button class="btn btn-sm btn-warning" onclick="projToggleFree()">Toggle Free-Only</button>
+        <button class="btn btn-sm" onclick="projOpenConfig()">Model Config</button>
+      </div>
+    </div>
+    <div class="tabs-secondary">
+      <span class="stab active" data-stab="state" onclick="switchProjTab('state')">📋 STATE</span>
+      <span class="stab" data-stab="roadmap" onclick="switchProjTab('roadmap')">🗺 ROADMAP</span>
+      <span class="stab" data-stab="context" onclick="switchProjTab('context')">📖 CONTEXT</span>
+      <span class="stab" data-stab="notes" onclick="switchProjTab('notes')">📝 NOTES</span>
+      <span class="stab" data-stab="sessions" onclick="switchProjTab('sessions')">⚡ SESSIONS</span>
+      <span class="stab" data-stab="files" onclick="switchProjTab('files')">📁 FILES</span>
+      <span class="stab" data-stab="manager" onclick="switchProjTab('manager')">🤖 MANAGER</span>
+    </div>
+    <div class="doc-area show" id="projDocArea">
+      <div class="doc-toolbar">
+        <span class="doc-name" id="docFileName">STATE.md</span>
+        <div class="doc-actions">
+          <button class="btn btn-sm" id="docEditBtn" onclick="docToggleEdit()">✏ Edit</button>
+          <button class="btn btn-sm btn-success" id="docSaveBtn" style="display:none" onclick="docSave()">💾 Save</button>
+          <button class="btn btn-sm" id="docCancelBtn" style="display:none" onclick="docCancelEdit()">Cancel</button>
+        </div>
+      </div>
+      <textarea class="doc-editor inp" id="docEditor" style="display:block" disabled></textarea>
+    </div>
+    <div class="doc-area" id="projSessionsArea">
+      <div class="proj-sessions"><table><thead><tr><th>Date</th><th>Task</th><th>Model</th><th>Agent</th><th>Duration</th><th>Status</th></tr></thead><tbody id="projSessBody"></tbody></table></div>
+    </div>
+    <div class="doc-area" id="projFilesArea">
+      <div style="display:flex;gap:6px;margin-bottom:8px">
+        <input class="search" id="newFileInput" placeholder="filename.md" style="width:180px">
+        <button class="btn btn-sm btn-success" onclick="projCreateFile()">+ Create</button>
+      </div>
+      <div class="file-list" id="projFileList"></div>
+    </div>
+    <div class="doc-area" id="projManagerArea">
+      <div class="agent-tree" id="projAgentTree"></div>
+    </div>
+  </div>
 </div>
 
-<!-- ═══ MODEL DETAIL / EDIT MODAL ═══ -->
-<div class="mod" id="mmod" onclick="if(event.target===this)closeMod('mmod')">
-  <div class="mi" id="mcont"></div>
+<!-- ─── MODELS ─── -->
+<div class="tab-pane" id="pane-models">
+  <div class="models-wrap">
+    <div class="models-stats" id="mStats"></div>
+    <div class="models-toolbar">
+      <div class="left">
+        <span class="title" style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim)">Model Inventory</span>
+        <button class="btn btn-sm btn-primary" onclick="openNewModel()">+ New</button>
+        <button class="btn btn-sm btn-danger" id="bulkDisBtn" style="display:none" onclick="bulkDisable()">Disable</button>
+        <button class="btn btn-sm btn-success" id="bulkEnaBtn" style="display:none" onclick="bulkEnable()">Enable</button>
+        <span id="selCount" style="font-size:10px;color:var(--text-dim)"></span>
+      </div>
+      <div class="right">
+        <div class="toggle-sw" id="freeToggle" onclick="togFreeMode()" title="Free-Only Mode"></div>
+        <span style="font-size:10px;color:var(--text-dim)">Free Only</span>
+      </div>
+    </div>
+    <div class="models-filters">
+      <input class="search" id="mSearch" placeholder="Search..." oninput="renderModels()">
+      <label>Status:</label><select id="fStat" onchange="renderModels()" class="btn btn-sm"><option value="">All</option><option value="active">Active</option><option value="broken">Broken</option><option value="removed">Removed</option></select>
+      <label>Cost:</label><select id="fCost" onchange="renderModels()" class="btn btn-sm"><option value="">All</option><option value="free">Free</option><option value="sub">Subscription</option><option value="payg">Pay-as-you-go</option></select>
+      <label>Tier:</label><select id="fTier" onchange="renderModels()" class="btn btn-sm"><option value="">All</option><option value="1">T1</option><option value="2">T2</option><option value="3">T3</option><option value="4">T4</option></select>
+      <label>Provider:</label><select id="fProv" onchange="renderModels()" class="btn btn-sm"><option value="">All</option></select>
+    </div>
+    <div class="models-table-wrap" id="mTableWrap"></div>
+  </div>
 </div>
 
-<!-- ═══ PROJECT CONFIG MODAL ═══ -->
-<div class="mod" id="pmod" onclick="if(event.target===this)closeMod('pmod')">
-  <div class="mi" id="pcont"></div>
+<!-- ─── LOGS ─── -->
+<div class="tab-pane" id="pane-logs">
+  <div class="logs-wrap">
+    <div class="logs-toolbar">
+      <label>Level:</label><select id="logLevel"><option value="">All</option><option value="info">info</option><option value="warn">warn</option><option value="error">error</option><option value="success">success</option><option value="debug">debug</option></select>
+      <label>Source:</label><select id="logSource"><option value="">All</option></select>
+      <label style="margin-left:auto"><input type="checkbox" id="logAutoScroll" checked> Auto-scroll</label>
+      <button class="btn btn-sm" onclick="loadLogs()">↻ Refresh</button>
+    </div>
+    <div class="logs-viewer" id="logViewer"><div class="logs-empty">Loading logs...</div></div>
+  </div>
 </div>
 
-<!-- ═══ NEW MODEL MODAL ═══ -->
-<div class="mod" id="nmod" onclick="if(event.target===this)closeMod('nmod')">
-  <div class="mi" id="ncont"></div>
+<!-- ─── SETTINGS ─── -->
+<div class="tab-pane" id="pane-settings">
+  <div class="settings-grid" id="settingsGrid"></div>
 </div>
 
-<!-- ═══ TOAST ═══ -->
+</div> <!-- /main -->
+
+<!-- ═══════════════════ STATUS BAR (BOTTOM) ═══════════════════ -->
+<div class="status-bar">
+  <span class="sb-dot on" id="sbDot"></span>
+  <span id="sbText">Starting...</span>
+  <span class="sb-sep"></span>
+  <span id="sbTime">—</span>
+  <span class="sb-sep"></span>
+  <span id="sbModel">model: —</span>
+  <div class="sb-right">
+    <span class="sb-item">SSE <span id="sseStatus" style="color:var(--yellow)">connecting</span></span>
+    <span class="sb-item">⏱ <span id="upTime">0s</span></span>
+  </div>
+</div>
+
+<!-- ═══════════════════ MODAL ═══════════════════ -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal-content" id="modalContent"></div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
-const BASE='';
-let D=null; // all data
-let sortKey='tier',sortDir=1;
-let editMid=null,editMode=false;
+/* ═══════════════════════════════════════════════════════════════
+   CORE — API client, SSE, state management
+   ═══════════════════════════════════════════════════════════════ */
+const BASE = '';
+const DS = {
+  all: null,         // /api/all snapshot
+  agents: [],
+  projects: [],
+  models: [],
+  activity: [],
+  config: null,
+  state: null,
+  projectState: null,
+  logs: [],
+};
 
-// ── UTILS ──
-function toast(msg,ok){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show '+(ok?'ok':'err');setTimeout(()=>t.className='toast',3000)}
-function s(n,m){return'★'.repeat(Math.min(n,m))+'☆'.repeat(Math.max(0,m-n))}
-function fmt(n){return n>=1048576?(n/1048576).toFixed(0)+'M':n>=1000?(n/1000).toFixed(0)+'K':n}
-function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
-function escv(s){return(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
-async function api(path,opts){const r=await fetch(BASE+path,opts);return r.json()}
+let SSE_RETRIES = 0;
+let FEED_AUTO_SCROLL = true;
+let LOGS_AUTO_SCROLL = true;
+let MODAL_CB = null;
+let CUR_PROJ = null;
+let CUR_DOC_TAB = 'state';
+let DOC_EDITING = false;
+let DOC_ORIG = '';
+let MODEL_SORT_KEY = 'tier';
+let MODEL_SORT_DIR = -1;
 
-// ── TABS ──
-document.querySelectorAll('.tbp[data-tab]').forEach(t=>t.addEventListener('click',()=>{
-  document.querySelectorAll('.tbp[data-tab]').forEach(x=>x.classList.remove('a'));
-  document.querySelectorAll('.sec').forEach(x=>x.classList.remove('a'));
-  t.classList.add('a');document.getElementById('sec-'+t.dataset.tab).classList.add('a');
-}));
+const U8 = String.fromCharCode;
+const BOX = { h:'─', v:'│', tl:'┌', tr:'┐', bl:'└', br:'┘', ts:'┬', bs:'┴', ls:'├', rs:'┤', cr:'┼' };
 
-// ── STATUS ──
-function updStatus(ok,msg){
-  document.getElementById('sdot').className='dot '+(ok?'g':'r');
-  document.getElementById('stxt').textContent=msg;
-  if(!D||!D.status) return;
-  const c=D.config||{};
-  document.getElementById('fsw').className='sw'+(c.free_only_mode?' on':'');
-  const fp=document.getElementById('fpill');fp.style.display=c.free_only_mode?'inline-flex':'none';
-  const dc=(c.disabled_models||[]).length;
-  const dp=document.getElementById('dpill');dp.textContent=dc+' DISABLED';dp.style.display=dc>0?'inline-flex':'none';
+function $(id) { return document.getElementById(id); }
+function esc(s) { return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmt(n) { if(!n) return '0'; const v=parseInt(n); return v>=1048576?(v/1048576).toFixed(1)+'M':v>=1000?(v/1000).toFixed(1)+'K':String(v); }
+function stars(v,m){ v=v||0; m=m||5; return '★'.repeat(Math.min(v,m))+'☆'.repeat(Math.max(0,m-v)); }
+function timeAgo(s){ if(!s) return '—'; try{ const d=new Date(s); if(isNaN(d))return '—'; const n=(Date.now()-d)/1000; if(n<0)return 'now'; if(n<60)return Math.round(n)+'s'; if(n<3600)return Math.round(n/60)+'m'; return Math.round(n/3600)+'h '+Math.round((n%3600)/60)+'m'; }catch(e){return '—'} }
+function fmtTime(ts){ if(!ts)return '—'; try{ const d=new Date(ts); if(isNaN(d))return ts.slice(11,19); return d.toLocaleTimeString(); }catch(e){return ts.slice?ts.slice(11,19):'—'} }
+function now(){ return new Date().toISOString(); }
+function logTs(){ const d=new Date(); return d.toLocaleTimeString('en-US',{hour12:false}); }
+
+/* ── API ── */
+async function api(path, opts) {
+  try {
+    const r = await fetch(BASE + path, opts);
+    if (!r.ok) { const e = await r.json().catch(()=>({error:r.statusText})); return {error:e.error||r.statusText}; }
+    return await r.json();
+  } catch(e) { return {error:e.message}; }
 }
 
-// ── CONFIG TOGGLE ──
-async function togCfg(key){
-  const c=D.config||await api('/api/config');
-  const r=await api('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({[key]:!c[key]})});
-  if(r&&r.ok){toast(key+' '+(r.config[key]?'ON':'OFF'),true);await refresh()}else toast('Toggle failed',false);
+/* ── Toast ── */
+function toast(msg, type='info') {
+  const t = $('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  clearTimeout(t._hid);
+  t._hid = setTimeout(() => t.className = 'toast', 2500);
 }
 
-// ── REFRESH ──
-async function refresh(){
-  try{
-    D=await api('/api/all');
-    const m=D.models||{},ss=D.sessions||{},p=D.projects||{};
-    const lf=D.status.free_only_mode?' [FREE ONLY]':'';
-    updStatus(true,(m.total||0)+' models · '+(ss.count||0)+' sessions · '+(p.count||0)+' projects'+lf);
-    renderModels();renderProjects();renderSessions();renderPrices();
-  }catch(e){updStatus(false,'Error: '+e.message)}
+/* ── SSE ── */
+let evtSource = null;
+
+function connectSSE() {
+  if (evtSource) { evtSource.close(); }
+
+  evtSource = new EventSource(BASE + '/api/activity/stream');
+  evtSource.onopen = () => {
+    $('sseStatus').textContent = 'connected';
+    $('sseStatus').style.color = 'var(--green)';
+    $('disconnected').classList.remove('show');
+    SSE_RETRIES = 0;
+  };
+
+  evtSource.addEventListener('activity', (e) => {
+    try {
+      const data = JSON.parse(e.data);
+      if (data.events && data.events.length) {
+        DS.activity = [...data.events, ...DS.activity].slice(0, 500);
+        renderActivityFeed();
+      }
+    } catch(err) { /* skip malformed */ }
+  });
+
+  evtSource.addEventListener('state', (e) => {
+    try {
+      const data = JSON.parse(e.data);
+      DS.state = data;
+      updateStatusBar();
+      updateHeaderStats();
+    } catch(err) { /* skip */ }
+  });
+
+  evtSource.addEventListener('agents', (e) => {
+    try {
+      const data = JSON.parse(e.data);
+      if (data.agents) { DS.agents = data.agents; renderAgents(); updateHeaderStats(); }
+    } catch(err) { /* skip */ }
+  });
+
+  evtSource.addEventListener('heartbeat', (e) => {
+    try {
+      const data = JSON.parse(e.data);
+      $('sbTime').textContent = fmtTime(data.ts);
+    } catch(err) { /* skip */ }
+  });
+
+  evtSource.onerror = () => {
+    $('sseStatus').textContent = 'reconnecting';
+    $('sseStatus').style.color = 'var(--yellow)';
+    $('disconnected').classList.add('show');
+    SSE_RETRIES++;
+    evtSource.close();
+    setTimeout(connectSSE, Math.min(2000 * SSE_RETRIES, 10000));
+  };
 }
 
-// ═══════════════════════════════════════════════════════════
-// MODELS TAB
-// ═══════════════════════════════════════════════════════════
-function renderModels(){
-  const m=D.models;
-  if(!m){document.getElementById('mstats').innerHTML='<div class="card">No data</div>';return;}
-  const c=D.config||{},dc=(c.disabled_models||[]).length;
-  document.getElementById('mstats').innerHTML=`
-    <div class="card st"><div class="v">${m.total}</div><div class="l">Visible</div></div>
-    <div class="card st"><div class="v">${m.active}</div><div class="l">Active</div></div>
-    <div class="card st"><div class="v" style="color:var(--red)">${dc}</div><div class="l">Disabled</div></div>
-    <div class="card st"><div class="v" style="color:var(--green)">${m.free_only?'ON':'OFF'}</div><div class="l">Free Only</div></div>`;
+/* ── Initial Load ── */
+async function initLoad() {
+  const r = await api('/api/all');
+  if (r.error) {
+    $('hText').textContent = 'Error: ' + r.error;
+    $('hDot').className = 'status-dot off';
+    return;
+  }
+  DS.all = r;
+  DS.config = r.config || {};
+  DS.state = r.state || {};
+  DS.agents = r.agents || [];
+  DS.activity = (r.logs && r.logs.logs) ? r.logs.logs.reverse().slice(-200) : [];
 
-  // Bulk actions bar
-  let h=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
-    <div style="display:flex;gap:6px;align-items:center">
-      <span style="font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)">Models</span>
-      <button class="btn btn-xs" onclick="refresh()">↻ Refresh</button>
-      <button class="btn btn-g btn-xs" onclick="openNewModel()">+ New Model</button>
-    </div>
-    <div style="display:flex;gap:4px">
-      <button class="btn btn-r btn-xs" id="bulkDisBtn" onclick="bulkDisable()" style="display:none">Disable Selected</button>
-      <button class="btn btn-g btn-xs" id="bulkEnaBtn" onclick="bulkEnable()" style="display:none">Enable Selected</button>
-      <span id="selCount" style="font-size:11px;color:var(--muted);padding:2px 6px"></span>
-    </div>
-  </div>`;
+  updateStatusBar();
+  updateHeaderStats();
+  renderHomeStats();
+  renderActivityFeed();
+  renderAgents();
+  renderProjects();
+  renderModels();
+  renderSettings();
+  loadLogs();
 
-  // Filters
-  h+=`<div class="flt">
-    <input class="inp inp-s" id="mSearch" placeholder="Search..." oninput="filterModels()" style="width:200px">
-    <label>Status:</label><select class="inp inp-s" id="fStat" onchange="filterModels()"><option value="">All</option><option value="active">Active</option><option value="broken">Broken</option><option value="removed">Removed</option></select>
-    <label>Cost:</label><select class="inp inp-s" id="fCost" onchange="filterModels()"><option value="">All</option><option value="free">Free</option><option value="subscription">Subscription</option><option value="payg">Pay-as-you-go</option></select>
-    <label>Tier:</label><select class="inp inp-s" id="fTier" onchange="filterModels()"><option value="">All</option><option value="1">T1</option><option value="2">T2</option><option value="3">T3</option><option value="4">T4</option></select>
-    <label>Provider:</label><select class="inp inp-s" id="fProv" onchange="filterModels()"><option value="">All</option></select>
-    <label>Routing:</label><select class="inp inp-s" id="fRout" onchange="filterModels()"><option value="">All</option><option value="allowed">Allowed</option><option value="blocked">Blocked</option></select>
-  </div>`;
+  // Update counts in tab buttons
+  $('tbAgents').textContent = (DS.agents||[]).length;
+  if (r.projects) $('tbProjects').textContent = r.projects.count || 0;
+  if (r.models) $('tbModels').textContent = r.models.total || 0;
+  $('hText').textContent = (r.models ? r.models.total : 0) + ' models · ' +
+    (r.projects ? r.projects.count : 0) + ' projects · ' +
+    (r.sessions ? r.sessions.count : 0) + ' sessions';
 
-  // Table
-  h+=`<div class="tw"><table><thead><tr>
-    <th class="chk"><input type="checkbox" id="selAll" onchange="toggleSelAll(this)" style="accent-color:var(--blue)"></th>
-    <th onclick="sortM('name')">Name<span class="si" id="sn_name"></span></th>
-    <th onclick="sortM('id')">ID<span class="si" id="sn_id"></span></th>
-    <th onclick="sortM('provider')">Provider<span class="si" id="sn_provider"></span></th>
-    <th onclick="sortM('tier')">Tier<span class="si" id="sn_tier"></span></th>
-    <th onclick="sortM('speed_rating')">Speed<span class="si" id="sn_speed_rating"></span></th>
-    <th onclick="sortM('context_window')">Context<span class="si" id="sn_context_window"></span></th>
-    <th>Cost</th>
-    <th>Routing</th>
-    <th>Actions</th>
-  </tr></thead><tbody id="mtbody"></tbody></table></div>`;
-  document.getElementById('mlist').innerHTML=h;
-
-  // Populate provider filter
-  const providers=[...new Set((m.models||[]).map(x=>x.provider))].sort();
-  const pf=document.getElementById('fProv');
-  providers.forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;pf.appendChild(o)});
-
-  renderModelTable();
+  connectSSE();
 }
 
-function renderModelTable(){
-  const m=D.models,models=m.models||[];
-  const c=D.config||{},disabled=c.disabled_models||[];
-  const q=(document.getElementById('mSearch')||{value:''}).value.toLowerCase();
-  const fs=(document.getElementById('fStat')||{value:''}).value;
-  const fc=(document.getElementById('fCost')||{value:''}).value;
-  const ft=(document.getElementById('fTier')||{value:''}).value;
-  const fp=(document.getElementById('fProv')||{value:''}).value;
-  const fr=(document.getElementById('fRout')||{value:''}).value;
+/* ── Status Bar ── */
+function updateStatusBar() {
+  const s = DS.state || {};
+  $('sbText').textContent = s.project ? s.project + ' / ' + (s.task||'—') : 'No active project';
+  $('sbModel').textContent = 'model: ' + (s.model||'—');
+  $('sbDot').className = 'sb-dot ' + (s.project ? 'on' : 'off');
+}
 
-  let filtered=models.filter(x=>{
-    if(q&&!x.name?.toLowerCase().includes(q)&&!x.id?.toLowerCase().includes(q))return false;
-    if(fs){const st=x.agent_ready&&x.status!='removed'?'active':x.status=='removed'?'removed':'broken';if(st!==fs)return false}
-    if(fc){const ct=x.cost_type||'';if(fc==='free'&&ct!=='free'&&ct!=='free_tier')return false;if(fc==='subscription'&&ct!=='subscription')return false;if(fc==='payg'&&ct!=='payg'&&ct!=='pay_per_token')return false}
-    if(ft&&x.tier!=parseInt(ft))return false;
-    if(fp&&x.provider!==fp)return false;
-    if(fr){const isDis=disabled.includes(x.id);if(fr==='allowed'&&isDis)return false;if(fr==='blocked'&&!isDis)return false}
+function updateHeaderStats() {
+  const agents = DS.agents || [];
+  const active = agents.filter(a => a.status === 'active').length;
+  $('sAgents').textContent = agents.length;
+  $('sActive').textContent = active;
+  $('hcAgents').textContent = active;
+  if (DS.all) {
+    const m = DS.all.models || {};
+    const p = DS.all.projects || {};
+    const s = DS.all.sessions || {};
+    $('sModels').textContent = m.total || 0;
+    $('sProjects').textContent = p.count || 0;
+    $('sSessions').textContent = s.count || 0;
+    $('hcModels').textContent = m.active || 0;
+    $('hcProjects').textContent = p.count || 0;
+    $('hcSessions').textContent = s.count || 0;
+  }
+}
+
+function renderHomeStats() {
+  // Already done in updateHeaderStats
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TAB SWITCHING
+   ═══════════════════════════════════════════════════════════════ */
+document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    document.querySelectorAll('.tab-btn[data-tab]').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    const pane = $('pane-' + tab);
+    if (pane) pane.classList.add('active');
+    if (tab === 'logs') loadLogs();
+  });
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   HOME — Activity Feed
+   ═══════════════════════════════════════════════════════════════ */
+let feedCount = 0;
+
+function renderActivityFeed() {
+  const feed = $('activityFeed');
+  const filter = $('feedFilter').value;
+  const entries = DS.activity;
+
+  if (!entries || !entries.length) {
+    feed.innerHTML = '<div class="feed-empty"><span class="big">⏳</span>No activity yet.<br>Start a project and agents will appear here.</div>';
+    return;
+  }
+
+  let html = '';
+  let shown = 0;
+  for (const e of entries) {
+    if (filter && e.level !== filter) continue;
+    shown++;
+    const lvl = e.level || 'info';
+    const lvlClass = lvl === 'success' ? 'success' : lvl;
+    html += '<div class="feed-entry">' +
+      '<span class="ts">' + fmtTime(e.ts) + '</span>' +
+      '<span class="lvl ' + lvlClass + '">' + esc(lvl) + '</span>' +
+      '<span class="msg">' + esc(e.msg || e.message || JSON.stringify(e)) + '</span>' +
+      '</div>';
+  }
+
+  feed.innerHTML = html ||
+    '<div class="feed-empty"><span class="big">🔍</span>No entries match filter.</div>';
+
+  // Auto-scroll
+  if ($('feedAutoScroll').checked) {
+    feed.scrollTop = feed.scrollHeight;
+  }
+}
+
+// Feed filter change
+$('feedFilter').addEventListener('change', renderActivityFeed);
+$('feedAutoScroll').addEventListener('change', () => {
+  FEED_AUTO_SCROLL = $('feedAutoScroll').checked;
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   AGENTS TAB
+   ═══════════════════════════════════════════════════════════════ */
+function renderAgents() {
+  const grid = $('agentGrid');
+  const agents = DS.agents || [];
+  const q = ($('agentSearch')||{value:''}).value.toLowerCase();
+
+  if (!agents.length) {
+    grid.innerHTML = '<div class="agent-empty"><span class="big">🤖</span>No agents active.<br>Start a project and agents will appear here.</div>';
+    return;
+  }
+
+  let filtered = agents;
+  if (q) filtered = agents.filter(a => (a.name||'').toLowerCase().includes(q) || (a.task||'').toLowerCase().includes(q));
+
+  let html = '';
+  for (const a of filtered) {
+    const depth = a.subagent_depth || 0;
+    let depthHtml = '';
+    if (depth > 0) {
+      const segs = [];
+      for (let i = 0; i < Math.min(depth, 8); i++) {
+        const cls = i < 3 ? 'filled' : i < 6 ? 'filled deep' : 'filled deepest';
+        segs.push('<span class="seg ' + cls + '"></span>');
+      }
+      depthHtml = '<div class="depth-bar">' + segs.join('') + '</div>';
+    }
+    html += '<div class="agent-card" onclick="openAgentModal(\'' + esc(a.name||'') + '\')">' +
+      '<div class="top"><span class="name">' + esc(a.name||'Agent') + '</span>' +
+      '<span class="status-badge ' + (a.status||'active') + '">' + esc(a.status||'active') + '</span></div>' +
+      (a.project ? '<div class="project-name">' + esc(a.project) + '</div>' : '') +
+      '<div class="info">' +
+      '<div class="row"><span class="label">Model</span><span class="value">' + esc(a.model||'—') + '</span></div>' +
+      '<div class="row"><span class="label">Task</span><span class="value">' + esc((a.task||'').slice(0,60)) + '</span></div>' +
+      '<div class="row"><span class="label">Depth</span><span class="value">' + depth + ' sub-agents</span></div>' +
+      (a.last_seen ? '<div class="row"><span class="label">Seen</span><span class="value">' + timeAgo(a.last_seen) + '</span></div>' : '') +
+      '</div>' + depthHtml + '</div>';
+  }
+  grid.innerHTML = html || '<div class="agent-empty"><span class="big">🔍</span>No agents match search.</div>';
+  $('tbAgents').textContent = filtered.length;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PROJECTS TAB
+   ═══════════════════════════════════════════════════════════════ */
+function renderProjects() {
+  const grid = $('projGrid');
+  const projects = (DS.all && DS.all.projects && DS.all.projects.projects) || [];
+  const q = ($('projSearch')||{value:''}).value.toLowerCase();
+
+  if (!projects.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-dim)">No projects yet.</div>';
+    return;
+  }
+
+  let filtered = projects;
+  if (q) filtered = projects.filter(p => p.name.toLowerCase().includes(q));
+
+  let html = '';
+  for (const p of filtered) {
+    const lastSess = p.sessions && p.sessions.length ? p.sessions[p.sessions.length-1] : null;
+    const lastDate = lastSess ? (lastSess.logged_at || lastSess.date || '') : '';
+    const allowlist = p.allowlist_count||0;
+    const freeOnly = p.free_only||false;
+    html += '<div class="proj-card" onclick="openProjDetail(\'' + esc(p.name) + '\')">' +
+      '<div class="top"><span class="proj-name">📁 ' + esc(p.name) + '</span></div>' +
+      '<div class="proj-meta">' +
+      '<span>' + (p.session_count||0) + ' sessions</span>' +
+      '<span>' + (p.task_count||0) + ' tasks</span>' +
+      (lastDate ? '<span>Last: ' + esc(lastDate) + '</span>' : '') +
+      '</div>' +
+      '<div class="proj-badges">' +
+      (freeOnly ? '<span class="badge" style="background:rgba(88,166,255,.15);color:var(--blue)">FREE ONLY</span>' : '') +
+      (allowlist ? '<span class="badge" style="background:rgba(63,185,80,.15);color:var(--green)">' + allowlist + ' whitelisted</span>' : '') +
+      '</div>' +
+      (lastSess ? '<div class="proj-last">Last: <span class="hl">' + esc(lastSess.task||'') + '</span> (' + esc(lastSess.status||'') + ')</div>' : '') +
+      '</div>';
+  }
+  grid.innerHTML = html || '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-dim)">No matches.</div>';
+  $('tbProjects').textContent = filtered.length;
+}
+
+/* ── Project Detail ── */
+async function openProjDetail(name) {
+  CUR_PROJ = name;
+  $('projListView').style.display = 'none';
+  const detail = $('projDetail');
+  detail.classList.add('show');
+  $('pdTitle').textContent = name;
+
+  const r = await api('/api/project-state?name=' + encodeURIComponent(name));
+  if (r.error) { toast('Error: ' + r.error, 'error'); return; }
+  DS.projectState = r;
+  renderProjDocTab();
+  renderProjSessions();
+  renderProjFiles();
+  renderProjManager();
+}
+
+function closeProjDetail() {
+  CUR_PROJ = null;
+  $('projListView').style.display = 'block';
+  $('projDetail').classList.remove('show');
+}
+
+function switchProjTab(tab) {
+  CUR_DOC_TAB = tab;
+  document.querySelectorAll('#projDetail .stab').forEach(s => s.classList.toggle('active', s.dataset.stab === tab));
+  ['projDocArea','projSessionsArea','projFilesArea','projManagerArea'].forEach(id => $(id).classList.toggle('show', false));
+  if (tab === 'sessions') $('projSessionsArea').classList.add('show');
+  else if (tab === 'files') $('projFilesArea').classList.add('show');
+  else if (tab === 'editor' || tab === 'state' || tab === 'roadmap' || tab === 'context' || tab === 'notes') {
+    $('projDocArea').classList.add('show');
+    renderProjDocTab();
+  } else if (tab === 'manager') {
+    $('projManagerArea').classList.add('show');
+    renderProjManager();
+  }
+}
+
+function renderProjDocTab() {
+  const s = DS.projectState;
+  if (!s) return;
+  const map = { state: 'STATE.md', roadmap: 'ROADMAP.md', context: 'CONTEXT.md', notes: 'NOTES.md' };
+  const cmap = { state: s.state||'', roadmap: s.roadmap||'', context: s.context||'', notes: s.notes||'' };
+  const fn = map[CUR_DOC_TAB];
+  if (!fn) return;
+  $('docFileName').textContent = fn;
+  DOC_ORIG = cmap[CUR_DOC_TAB] || '';
+  DOC_EDITING = false;
+  const ed = $('docEditor');
+  ed.value = DOC_ORIG;
+  ed.disabled = true;
+  $('docEditBtn').style.display = 'inline-block';
+  $('docSaveBtn').style.display = 'none';
+  $('docCancelBtn').style.display = 'none';
+}
+
+function docToggleEdit() {
+  DOC_EDITING = true;
+  const ed = $('docEditor');
+  ed.disabled = false;
+  ed.style.display = 'block';
+  $('docEditBtn').style.display = 'none';
+  $('docSaveBtn').style.display = 'inline-block';
+  $('docCancelBtn').style.display = 'inline-block';
+}
+
+function docCancelEdit() {
+  DOC_EDITING = false;
+  const ed = $('docEditor');
+  ed.value = DOC_ORIG;
+  ed.disabled = true;
+  $('docEditBtn').style.display = 'inline-block';
+  $('docSaveBtn').style.display = 'none';
+  $('docCancelBtn').style.display = 'none';
+}
+
+async function docSave() {
+  const map = { state: 'STATE.md', roadmap: 'ROADMAP.md', context: 'CONTEXT.md', notes: 'NOTES.md' };
+  const fn = map[CUR_DOC_TAB];
+  if (!fn || !CUR_PROJ) return;
+  const content = $('docEditor').value;
+  const r = await api('/api/project-doc', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: CUR_PROJ, file: fn, content })
+  });
+  if (r.ok) {
+    toast('Saved ' + fn, 'success');
+    DOC_ORIG = content;
+    DOC_EDITING = false;
+    $('docEditor').disabled = true;
+    $('docEditBtn').style.display = 'inline-block';
+    $('docSaveBtn').style.display = 'none';
+    $('docCancelBtn').style.display = 'none';
+    if (DS.projectState) {
+      const key = CUR_DOC_TAB;
+      DS.projectState[key] = content;
+    }
+  } else {
+    toast('Save failed', 'error');
+  }
+}
+
+function renderProjSessions() {
+  const s = DS.projectState;
+  const body = $('projSessBody');
+  if (!s || !s.sessions || !s.sessions.length) {
+    body.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:16px;color:var(--text-dim)">No sessions.</td></tr>';
+    return;
+  }
+  let h = '';
+  for (const sess of s.sessions) {
+    h += '<tr><td>' + esc(sess.date||'') + '</td><td style="font-family:var(--font);font-size:10px">' + esc(sess.task||'') + '</td><td>' + esc(sess.model||'') + '</td><td>' + esc(sess.agent||'shell') + '</td><td>' + esc(sess.duration||'') + '</td><td>' + esc(sess.status||'') + '</td></tr>';
+  }
+  body.innerHTML = h;
+}
+
+function renderProjFiles() {
+  const s = DS.projectState;
+  const list = $('projFileList');
+  if (!s || !s.docs || !s.docs.length) {
+    list.innerHTML = '<div style="padding:10px;color:var(--text-dim);font-size:11px">No files.</div>';
+    return;
+  }
+  let h = '';
+  for (const f of s.docs) {
+    h += '<div class="file-item"><span>' + (f.is_md ? '📄' : '📁') + ' ' + esc(f.name) + ' <span style="color:var(--text-dim)">' + (f.size||'') + 'B</span></span>' +
+      '<div style="display:flex;gap:4px">' +
+      (f.is_md ? '<button class="btn btn-sm" onclick="projOpenFile(\'' + esc(f.name) + '\')">Open</button>' : '') +
+      '<button class="btn btn-sm btn-danger" onclick="projDeleteFile(\'' + esc(f.name) + '\')">Delete</button></div></div>';
+  }
+  list.innerHTML = h;
+}
+
+async function projOpenFile(fn) {
+  const r = await api('/api/project-doc?name=' + encodeURIComponent(CUR_PROJ) + '&file=' + encodeURIComponent(fn));
+  if (r.content !== undefined) {
+    $('docFileName').textContent = fn;
+    DOC_ORIG = r.content;
+    $('docEditor').value = r.content;
+    $('docEditor').disabled = true;
+    // Switch doc area on
+    ['projSessionsArea','projFilesArea','projManagerArea'].forEach(id => $(id).classList.remove('show'));
+    $('projDocArea').classList.add('show');
+    DOC_EDITING = false;
+    $('docEditBtn').style.display = 'inline-block';
+    $('docSaveBtn').style.display = 'none';
+    $('docCancelBtn').style.display = 'none';
+  }
+}
+
+async function projDeleteFile(fn) {
+  if (!confirm('Delete "' + fn + '"?')) return;
+  const r = await api('/api/project-doc?name=' + encodeURIComponent(CUR_PROJ) + '&file=' + encodeURIComponent(fn), { method: 'DELETE' });
+  if (r.ok) { toast('Deleted: ' + fn, 'success'); openProjDetail(CUR_PROJ); }
+  else toast('Failed', 'error');
+}
+
+async function projCreateFile() {
+  const fn = $('newFileInput').value.trim();
+  if (!fn) return toast('Enter filename', 'error');
+  const r = await api('/api/project-doc', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: CUR_PROJ, file: fn, content: '# ' + fn + '\n\n' })
+  });
+  if (r.ok) { toast('Created: ' + fn, 'success'); $('newFileInput').value = ''; openProjDetail(CUR_PROJ); }
+  else toast('Failed', 'error');
+}
+
+function renderProjManager() {
+  const s = DS.projectState;
+  const tree = $('projAgentTree');
+  if (!s || !s.sessions || !s.sessions.length) {
+    tree.innerHTML = '<div style="color:var(--text-dim)">No sessions recorded. Start a task to see agents.</div>';
+    return;
+  }
+  let h = '<div style="margin-bottom:4px;color:var(--green);font-weight:600">📁 ' + esc(CUR_PROJ) + '</div>';
+  const sessions = s.sessions;
+  for (let i = 0; i < Math.min(sessions.length, 30); i++) {
+    const s = sessions[i];
+    const icon = (s.status==='complete'||s.status==='done')?'✅':(s.status==='in_progress'||s.status==='active')?'🔄':'❌';
+    const indent = Math.min(i, 16);
+    h += '<div class="node" style="padding-left:' + (indent * 16) + 'px">' +
+      '<span class="icon">' + icon + '</span>' +
+      '<span>' + esc(s.task||'') + '</span>' +
+      ' <span style="color:var(--text-dim);font-size:10px">(' + esc(s.model||'') + ' | ' + esc(s.duration||'') + ')</span></div>';
+  }
+  if (sessions.length > 30) h += '<div class="node" style="padding-left:480px;color:var(--text-dim)">... and ' + (sessions.length-30) + ' more</div>';
+  tree.innerHTML = h;
+}
+
+async function projToggleFree() {
+  if (!CUR_PROJ) return;
+  const pc = DS.config && DS.config.projects && DS.config.projects[CUR_PROJ];
+  const cur = pc ? pc.free_only : false;
+  const r = await api('/api/config', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ projects: { [CUR_PROJ]: { model_allowlist: (pc&&pc.model_allowlist)||[], free_only: !cur } } })
+  });
+  if (r.ok) { toast('Free-only ' + (!cur ? 'ON' : 'OFF'), 'success'); await initLoad(); }
+}
+
+async function projOpenConfig() {
+  const r = await api('/api/models?all=1');
+  const all = r.models || [];
+  const pc = (DS.config && DS.config.projects && DS.config.projects[CUR_PROJ]) || {};
+  const wl = new Set(pc.model_allowlist || []);
+  const fo = pc.free_only || false;
+
+  let h = '<div class="modal-header"><h2>Model Config — ' + esc(CUR_PROJ) + '</h2><button class="btn btn-sm" onclick="closeModal()">✕</button></div>';
+  h += '<div style="margin-bottom:10px;display:flex;align-items:center;gap:10px">' +
+    '<div class="toggle-sw' + (fo?' on':'') + '" id="mpFreeToggle" onclick="this.classList.toggle(\'on\')"></div>' +
+    '<span style="font-size:11px;color:var(--text-dim)">Free-Only</span>' +
+    '<button class="btn btn-sm btn-success" onclick="saveProjConfig(\'' + esc(CUR_PROJ) + '\')" style="margin-left:auto">💾 Save</button></div>';
+  h += '<input class="search" id="mpSearch" placeholder="Search models..." oninput="filterMp()" style="width:100%;margin-bottom:8px">';
+  h += '<div style="max-height:360px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius);padding:4px">';
+  for (const m of all) {
+    const checked = wl.has(m.id) ? 'checked' : '';
+    h += '<label style="display:flex;align-items:center;gap:6px;padding:3px 6px;border-radius:3px;cursor:pointer;font-size:11px">' +
+      '<input type="checkbox" value="' + esc(m.id) + '" ' + checked + ' class="mpcb" style="accent-color:var(--green)">' +
+      '<span style="font-weight:500">' + esc(m.name||m.id.split('/').pop()) + '</span>' +
+      ' <span style="color:var(--text-dim);font-size:9px;font-family:var(--font)">' + esc(m.id) + '</span></label>';
+  }
+  h += '</div>';
+  h += '<div style="margin-top:6px;font-size:10px;color:var(--text-dim)">' + wl.size + ' whitelisted</div>';
+  openModal(h);
+}
+
+function filterMp() {
+  const q = ($('mpSearch')||{value:''}).value.toLowerCase();
+  document.querySelectorAll('#modalContent label').forEach(el => {
+    el.style.display = el.textContent.toLowerCase().includes(q) ? 'flex' : 'none';
+  });
+}
+
+async function saveProjConfig(name) {
+  const checks = document.querySelectorAll('.mpcb:checked');
+  const wl = Array.from(checks).map(c => c.value);
+  const fo = $('mpFreeToggle').classList.contains('on');
+  const r = await api('/api/config', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ projects: { [name]: { model_allowlist: wl, free_only: fo } } })
+  });
+  if (r.ok) { toast('Saved ' + wl.length + ' models', 'success'); closeModal(); await initLoad(); }
+  else toast('Failed', 'error');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MODELS TAB
+   ═══════════════════════════════════════════════════════════════ */
+function renderModels() {
+  const all = DS.all ? DS.all.models : null;
+  if (!all) { $('mStats').innerHTML = '<div class="term-card">Loading...</div>'; return; }
+
+  const dc = (DS.config && DS.config.disabled_models) ? DS.config.disabled_models.length : 0;
+  $('mStats').innerHTML =
+    '<div class="term-card st"><div class="card-value">' + all.total + '</div><div class="card-sub">Visible</div></div>' +
+    '<div class="term-card st"><div class="card-value g">' + all.active + '</div><div class="card-sub">Active</div></div>' +
+    '<div class="term-card st"><div class="card-value" style="color:var(--red)">' + dc + '</div><div class="card-sub">Disabled</div></div>' +
+    '<div class="term-card st"><div class="card-value" style="color:' + (all.free_only?'var(--green)':'var(--text-dim)') + '">' + (all.free_only?'ON':'OFF') + '</div><div class="card-sub">Free Only</div></div>';
+
+  $('freeToggle').className = 'toggle-sw' + (DS.config && DS.config.free_only_mode ? ' on' : '');
+  // Provider filter optipns
+  const provs = [...new Set((all.models||[]).map(m => m.provider))].sort();
+  const sel = $('fProv');
+  sel.innerHTML = '<option value="">All</option>' + provs.map(p => '<option value="' + esc(p) + '">' + esc(p) + '</option>').join('');
+
+  // Do table
+  const q = ($('mSearch')||{value:''}).value.toLowerCase();
+  const fs = ($('fStat')||{value:''}).value;
+  const fc = ($('fCost')||{value:''}).value;
+  const ft = ($('fTier')||{value:''}).value;
+  const fp = ($('fProv')||{value:''}).value;
+
+  let filtered = (all.models||[]).filter(m => {
+    if (q && !m.name.toLowerCase().includes(q) && !m.id.toLowerCase().includes(q)) return false;
+    if (fs) { const st = m.agent_ready && m.status !== 'removed' ? 'active' : m.status === 'removed' ? 'removed' : 'broken'; if (st !== fs) return false; }
+    if (fc) { const ct = m.cost_type||''; if (fc==='free' && ct!=='free' && ct!=='free_tier' && ct!=='local_free') return false; if (fc==='sub' && ct!=='subscription') return false; if (fc==='payg' && ct!=='payg' && ct!=='pay_per_token') return false; }
+    if (ft && m.tier != parseInt(ft)) return false;
+    if (fp && m.provider !== fp) return false;
     return true;
   });
 
-  // Sort
-  filtered.sort((a,b)=>{
-    let va=a[sortKey]??'',vb=b[sortKey]??'';
-    if(typeof va==='string')return va.localeCompare(vb)*sortDir;
-    return(va-vb)*sortDir;
+  filtered.sort((a,b) => {
+    let va = a[MODEL_SORT_KEY]||'', vb = b[MODEL_SORT_KEY]||'';
+    if (typeof va === 'string') return va.localeCompare(vb) * MODEL_SORT_DIR;
+    return (parseFloat(va) - parseFloat(vb)) * MODEL_SORT_DIR;
   });
 
-  // Update sort indicators
-  document.querySelectorAll('[id^="sn_"]').forEach(x=>x.textContent='');
-  const si=document.getElementById('sn_'+sortKey);if(si)si.textContent=sortDir>1?' ▲':' ▼';
+  const disabled = DS.config.disabled_models || [];
+  let h = '<table><thead><tr>' +
+    '<th style="width:24px"><input type="checkbox" id="selAll" onchange="toggleSelAll(this)" style="accent-color:var(--blue)"></th>' +
+    '<th onclick="sortModels(\'name\')">Name</th>' +
+    '<th onclick="sortModels(\'provider\')">Provider</th>' +
+    '<th onclick="sortModels(\'tier\')">Tier</th>' +
+    '<th onclick="sortModels(\'speed_rating\')">Speed</th>' +
+    '<th onclick="sortModels(\'context_window\')">Context</th>' +
+    '<th>Cost</th><th>Routing</th><th>Actions</th></tr></thead><tbody>';
 
-  const tbody=document.getElementById('mtbody');
-  let html='';
-  for(const x of filtered){
-    const isDis=disabled.includes(x.id);
-    const st=x.agent_ready&&x.status!='removed'?'active':x.status=='removed'?'removed':'broken';
-    const cb=(x.cost_type||'').includes('free')?'b-free':x.cost_type==='subscription'?'b-sub':'b-payg';
-    const clb=x.cost_type||'?';
-    const tb=x.tier?`b-t${x.tier}`:'';
-    const dim=isDis?'dim':'';
-    html+=`<tr class="${dim}">
-      <td class="chk"><input type="checkbox" class="mchk" data-id="${escv(x.id)}" style="accent-color:var(--blue)"></td>
-      <td><span class="ie" onclick="openModelDetail('${escv(x.id)}')">${esc(x.name||x.id.split('/').pop())}</span></td>
-      <td style="font-family:monospace;font-size:10px;color:var(--muted)">${esc(x.id)}</td>
-      <td>${esc(x.provider)}</td>
-      <td><span class="b ${tb}">${x.tier?'T'+x.tier:'–'}</td>
-      <td><span class="stars" onclick="cycleSpeed('${escv(x.id)}',${x.speed_rating||0})">${s(x.speed_rating||0,5)}</span></td>
-      <td>${fmt(x.context_window)}</td>
-      <td><span class="b ${cb}">${clb}</span></td>
-      <td>${isDis?'<span class="b b-dis">BLOCKED</span>':'<span class="b b-act">ALLOWED</span>'}</td>
-      <td><div class="ra">
-        <button class="btn btn-y btn-xs" onclick="openModelDetail('${escv(x.id)}')">Edit</button>
-        <button class="btn ${isDis?'btn-g':'btn-r'} btn-xs" onclick="${isDis?`enableM('${escv(x.id)}')`:`disableM('${escv(x.id)}')`}">${isDis?'Enable':'Disable'}</button>
-      </div></td>
-    </tr>`;
+  for (const m of filtered) {
+    const isDis = disabled.includes(m.id);
+    const ct = m.cost_type||'';
+    const costBadge = ct.includes('free')?'free':ct==='subscription'?'sub':'payg';
+    const tierBadge = m.tier ? 't' + m.tier : '';
+    const dim = isDis ? ' dim' : '';
+    h += '<tr class="dim">' +
+      '<td><input type="checkbox" class="mchk" data-id="' + esc(m.id) + '" style="accent-color:var(--blue)"></td>' +
+      '<td><span class="model-name" onclick="openModelDetail(\'' + esc(m.id) + '\')">' + esc(m.name||m.id.split('/').pop()) + '</span></td>' +
+      '<td style="font-size:10px;color:var(--text-dim)">' + esc(m.provider) + '</td>' +
+      '<td><span class="tier-badge ' + tierBadge + '">' + (m.tier?'T'+m.tier:'—') + '</span></td>' +
+      '<td style="color:var(--yellow);cursor:pointer" onclick="cycleModelSpeed(\'' + esc(m.id) + '\',' + (m.speed_rating||0) + ')">' + stars(m.speed_rating,5) + '</td>' +
+      '<td>' + fmt(m.context_window) + '</td>' +
+      '<td><span class="cost-badge ' + costBadge + '">' + esc(ct) + '</span></td>' +
+      '<td>' + (isDis ? '<span style="color:var(--red);font-size:10px">BLOCKED</span>' : '<span style="color:var(--green);font-size:10px">ALLOWED</span>') + '</td>' +
+      '<td><div style="display:flex;gap:2px">' +
+      '<button class="btn btn-sm" onclick="openModelDetail(\'' + esc(m.id) + '\')">Edit</button>' +
+      '<button class="btn btn-sm ' + (isDis?'btn-success':'btn-danger') + '" onclick="' + (isDis?'enableModel(\'' + esc(m.id) + '\')':'disableModel(\'' + esc(m.id) + '\')') + '">' + (isDis?'Enable':'Disable') + '</button></div></td></tr>';
   }
-  tbody.innerHTML=html||'<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:20px">No models match filters</td></tr>';
-
-  // Checkbox listeners
-  document.querySelectorAll('.mchk').forEach(chk=>chk.addEventListener('change',updateSelCount));
-}
-
-function sortM(key){
-  if(sortKey===key)sortDir*=-1;else{sortKey=key;sortDir=1}
-  renderModelTable();
-}
-
-function filterModels(){renderModelTable()}
-
-function updateSelCount(){
-  const sel=Array.from(document.querySelectorAll('.mchk:checked'));
-  const cnt=document.getElementById('selCount');
-  const bDis=document.getElementById('bulkDisBtn');
-  const bEna=document.getElementById('bulkEnaBtn');
-  cnt.textContent=sel.length?sel.length+' selected':'';
-  bDis.style.display=sel.length?'inline-block':'none';
-  bEna.style.display=sel.length?'inline-block':'none';
-}
-
-function toggleSelAll(cb){
-  document.querySelectorAll('.mchk').forEach(x=>x.checked=cb.checked);
+  h += '</tbody></table>';
+  if (!filtered.length) h = '<div style="text-align:center;padding:20px;color:var(--text-dim)">No models match filters.</div>';
+  $('mTableWrap').innerHTML = h;
   updateSelCount();
 }
 
-async function bulkDisable(){
-  const sel=Array.from(document.querySelectorAll('.mchk:checked')).map(x=>x.dataset.id);
-  const c=D.config||{},dis=new Set(c.disabled_models||[]);
-  sel.forEach(x=>dis.add(x));
-  const r=await api('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({disabled_models:[...dis]})});
-  if(r&&r.ok){toast('Disabled '+sel.length+' models',true);await refresh()}else toast('Failed',false)}
-async function bulkEnable(){
-  const sel=Array.from(document.querySelectorAll('.mchk:checked')).map(x=>x.dataset.id);
-  const c=D.config||{},dis=(c.disabled_models||[]).filter(x=>!sel.includes(x));
-  const r=await api('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({disabled_models:dis})});
-  if(r&&r.ok){toast('Enabled '+sel.length+' models',true);await refresh()}else toast('Failed',false)}
-
-async function disableM(id){
-  const c=D.config||{},dis=[...new Set([...(c.disabled_models||[]),id])];
-  const r=await api('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({disabled_models:dis})});
-  if(r&&r.ok){toast('Disabled: '+id,true);await refresh()}else toast('Failed',false)}
-async function enableM(id){
-  const c=D.config||{},dis=(c.disabled_models||[]).filter(x=>x!==id);
-  const r=await api('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({disabled_models:dis})});
-  if(r&&r.ok){toast('Enabled: '+id,true);await refresh()}else toast('Failed',false)}
-
-async function cycleSpeed(id,current){
-  const models=D.models.models||[];
-  const idx=models.findIndex(m=>m.id===id);
-  if(idx<0)return;
-  const newVal=(current%5)+1;
-  const updated={...models[idx],speed_rating:newVal};
-  const r=await api('/api/models',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(updated)});
-  if(r&&r.ok){toast('Speed: '+id+' → '+newVal,true);await refresh()}else toast('Failed',false)}
-
-// ── MODEL DETAIL MODAL ──
-async function openModelDetail(id){
-  const m=await api('/api/models?id='+encodeURIComponent(id));
-  if(!m||m.error)return toast('Not found',false);
-  editMid=m.id;editMode=false;
-  renderModelDetail(m);
+function sortModels(key) {
+  if (MODEL_SORT_KEY === key) MODEL_SORT_DIR *= -1;
+  else { MODEL_SORT_KEY = key; MODEL_SORT_DIR = -1; }
+  renderModels();
 }
 
-function renderModelDetail(m){
-  const c=D.config||{},isDis=(c.disabled_models||[]).includes(m.id);
-  const cap=m.capabilities||{},cost=m.cost||{};
-  let h=`<div class="mh"><h2>${esc(m.name||m.id)}</h2>
-    <div style="display:flex;gap:6px">
-      ${!editMode?`<button class="btn btn-y" onclick="editMode=true;renderModelDetail(D.editM||m)">Edit</button>`:''}
-      ${editMode?`<button class="btn btn-g" onclick="saveModelDetail()">Save</button><button class="btn btn-m" onclick="editMode=false;renderModelDetail(D.editM||m)">Cancel</button>`:''}
-      <button class="btn btn-m" onclick="closeMod('mmod')">Close</button>
-    </div></div>`;
-
-  if(!editMode){
-    h+=`
-    <div class="fr"><div class="fl">ID</div><div class="fv" style="font-family:monospace">${esc(m.id)}</div></div>
-    <div class="fr"><div class="fl">Provider</div><div class="fv">${esc(m.provider||'–')}</div></div>
-    <div class="fr"><div class="fl">Name</div><div class="fv">${esc(m.name||'–')}</div></div>
-    <div class="fr"><div class="fl">Tier</div><div class="fv"><span class="b b-t${m.tier||0}">${m.tier?'T'+m.tier:'–'}</span></div></div>
-    <div class="fr"><div class="fl">Architecture</div><div class="fv">${esc(m.architecture||'–')}</div></div>
-    <div class="fr"><div class="fl">Status</div><div class="fv"><span class="b b-${m.agent_ready&&m.status!='removed'?'act':'brk'}">${m.status||'active'}</span></div></div>
-    <div class="fr"><div class="fl">Agent Ready</div><div class="fv">${m.agent_ready?'✅ Yes':'❌ No'}</div></div>
-    <div class="fr"><div class="fl">Speed</div><div class="fv"><span class="stars">${s(m.speed_rating||0,5)}</span> ${m.speed_rating||0}/5</div></div>
-    <div class="fr"><div class="fl">Context</div><div class="fv">${fmt(m.context_window)}</div></div>
-    <div class="fr"><div class="fl">GPU</div><div class="fv">${esc(m.gpu||'–')}</div></div>
-    <h3 style="margin:14px 0 8px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Pricing</h3>
-    <div class="fr"><div class="fl">Cost Type</div><div class="fv"><span class="b ${(cost.type||'').includes('free')?'b-free':cost.type==='subscription'?'b-sub':'b-payg'}">${cost.type||'–'}</span></div></div>
-    <div class="fr"><div class="fl">Amount</div><div class="fv">${cost.amount!=null?'$'+cost.amount:'–'}</div></div>
-    <div class="fr"><div class="fl">Period</div><div class="fv">${esc(cost.period||'–')}</div></div>
-    <div class="fr"><div class="fl">Limits</div><div class="fv">${esc(cost.limits||'–')}</div></div>
-    <div class="fr"><div class="fl">Source URL</div><div class="fv">${cost.source_url?`<a href="${esc(cost.source_url)}" target="_blank" style="color:var(--blue)">${esc(cost.source_url)}</a>`:'–'}</div></div>
-    <div class="fr"><div class="fl">Last Checked</div><div class="fv">${esc(cost.last_checked||'–')}</div></div>
-    <h3 style="margin:14px 0 8px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Capabilities</h3>
-    <div class="fr"><div class="fl">Capabilities</div><div class="fv"><div class="caps">`;
-    for(const[k,v]of Object.entries(cap))h+=`<span class="cap">${k}:<strong>${typeof v==='number'?s(v,5):v}</strong></span>`;
-    h+=`</div></div></div>
-    <div class="fr"><div class="fl">User Notes</div><div class="fv" style="white-space:pre-wrap">${esc(m.user_notes||'–')}</div></div>
-    <div class="fr"><div class="fl">Research Notes</div><div class="fv" style="white-space:pre-wrap">${esc(m.research_notes||'–')}</div></div>
-    <div class="fr"><div class="fl">Catalogued By</div><div class="fv">${esc(m.catalogued_by||'–')}</div></div>
-    <div class="fr"><div class="fl">Last Tested</div><div class="fv">${esc(m.last_tested||'–')}</div></div>
-    <div style="margin-top:16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">`;
-    if(isDis){
-      h+=`<button class="btn btn-g btn-xs" onclick="enableM('${escv(m.id)}');closeMod('mmod')">✅ Enable Routing</button>`;
-      h+=`<span style="color:var(--red);font-size:12px">⛔ Currently BLOCKED from routing</span>`;
-    } else {
-      h+=`<button class="btn btn-r btn-xs" onclick="disableM('${escv(m.id)}');closeMod('mmod')">⛔ Disable Routing</button>`;
-      h+=`<span style="color:var(--green);font-size:12px">✅ Currently ALLOWED for routing</span>`;
-    }
-    h+=`<button class="btn btn-r btn-xs" onclick="deleteModel('${escv(m.id)}')" style="margin-left:auto">🗑 Delete</button></div>`;
-  } else {
-    // EDIT MODE
-    h+=`
-    <div class="fr"><div class="fl">ID</div><div class="fv" style="font-family:monospace;color:var(--muted)">${esc(m.id)} <span style="font-size:10px">(read-only)</span></div></div>
-    <div class="fr"><div class="fl">Name *</div><div class="fv"><input class="inp" id="e_name" value="${escv(m.name||'')}"></div></div>
-    <div class="fr"><div class="fl">Provider</div><div class="fv"><input class="inp" id="e_provider" value="${escv(m.provider||'')}"></div></div>
-    <div class="fr"><div class="fl">Tier</div><div class="fv"><select class="inp" id="e_tier"><option value="">–</option><option value="1"${m.tier===1?' selected':''}>T1 (Best)</option><option value="2"${m.tier===2?' selected':''}>T2</option><option value="3"${m.tier===3?' selected':''}>T3</option><option value="4"${m.tier===4?' selected':''}>T4</option></select></div></div>
-    <div class="fr"><div class="fl">Architecture</div><div class="fv"><input class="inp" id="e_arch" value="${escv(m.architecture||'')}"></div></div>
-    <div class="fr"><div class="fl">Status</div><div class="fv"><select class="inp" id="e_status"><option value="active"${m.status==='active'?' selected':''}>Active</option><option value="broken"${m.status==='broken'?' selected':''}>Broken</option><option value="removed"${m.status==='removed'?' selected':''}>Removed</option></select></div></div>
-    <div class="fr"><div class="fl">Agent Ready</div><div class="fv"><select class="inp" id="e_ready"><option value="true"${m.agent_ready?' selected':''}>Yes</option><option value="false"${!m.agent_ready?' selected':''}>No</option></select></div></div>
-    <div class="fr"><div class="fl">Speed (0-5)</div><div class="fv"><input class="inp" type="number" min="0" max="5" id="e_speed" value="${m.speed_rating||0}"></div></div>
-    <div class="fr"><div class="fl">Context Window</div><div class="fv"><input class="inp" type="number" id="e_ctx" value="${m.context_window||0}"></div></div>
-    <div class="fr"><div class="fl">GPU</div><div class="fv"><input class="inp" id="e_gpu" value="${escv(m.gpu||'')}"></div></div>
-    <h3 style="margin:14px 0 8px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Pricing</h3>
-    <div class="fr"><div class="fl">Cost Type</div><div class="fv"><select class="inp" id="e_ctype">
-      <option value="free"${(cost.type||'').includes('free')?' selected':''}>Free</option>
-      <option value="free_tier"${cost.type==='free_tier'?' selected':''}>Free Tier</option>
-      <option value="subscription"${cost.type==='subscription'?' selected':''}>Subscription</option>
-      <option value="payg"${cost.type==='payg'?' selected':''}>Pay-as-you-go</option>
-      <option value="pay_per_token"${cost.type==='pay_per_token'?' selected':''}>Pay per Token</option>
-    </select></div></div>
-    <div class="fr"><div class="fl">Amount ($)</div><div class="fv"><input class="inp" type="number" step="0.01" id="e_camount" value="${cost.amount||0}"></div></div>
-    <div class="fr"><div class="fl">Period</div><div class="fv"><input class="inp" id="e_cperiod" value="${escv(cost.period||'')}" placeholder="e.g. monthly, hourly"></div></div>
-    <div class="fr"><div class="fl">Limits</div><div class="fv"><input class="inp" id="e_climits" value="${escv(cost.limits||'')}" placeholder="e.g. 100K tokens/day"></div></div>
-    <div class="fr"><div class="fl">Source URL</div><div class="fv"><input class="inp" id="e_csource" value="${escv(cost.source_url||'')}" placeholder="https://..."></div></div>
-    <h3 style="margin:14px 0 8px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Capabilities (0-5)</h3>
-    <div class="fr"><div class="fl">Reasoning</div><div class="fv"><input class="inp" type="number" min="0" max="5" id="e_creason" value="${cap.reasoning||0}"></div></div>
-    <div class="fr"><div class="fl">Coding</div><div class="fv"><input class="inp" type="number" min="0" max="5" id="e_ccoding" value="${cap.coding||0}"></div></div>
-    <div class="fr"><div class="fl">Creative</div><div class="fv"><input class="inp" type="number" min="0" max="5" id="e_ccreative" value="${cap.creative||0}"></div></div>
-    <div class="fr"><div class="fl">Vision</div><div class="fv"><select class="inp" id="e_cvision"><option value="true"${cap.vision?' selected':''}>Yes</option><option value="false"${!cap.vision?' selected':''}>No</option></select></div></div>
-    <div class="fr"><div class="fl">Tool Calls</div><div class="fv"><select class="inp" id="e_ctools"><option value="true"${cap.tool_calls?' selected':''}>Yes</option><option value="false"${!cap.tool_calls?' selected':''}>No</option></select></div></div>
-    <div class="fr"><div class="fl">Thinking</div><div class="fv"><select class="inp" id="e_cthinking"><option value="true"${cap.thinking?' selected':''}>Yes</option><option value="false"${!cap.thinking?' selected':''}>No</option></select></div></div>
-    <h3 style="margin:14px 0 8px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Notes</h3>
-    <div class="fr"><div class="fl">User Notes</div><div class="fv"><textarea class="inp" id="e_unotes">${esc(m.user_notes||'')}</textarea></div></div>
-    <div class="fr"><div class="fl">Research Notes</div><div class="fv"><textarea class="inp" id="e_rnotes">${esc(m.research_notes||'')}</textarea></div></div>
-    <div class="fr"><div class="fl">Last Tested</div><div class="fv"><input class="inp" type="date" id="e_tested" value="${m.last_tested||''}"></div></div>`;
-  }
-  document.getElementById('mcont').innerHTML=h;
-  document.getElementById('mmod').classList.add('open');
-  D.editM=m;
+function toggleSelAll(cb) {
+  document.querySelectorAll('.mchk').forEach(x => x.checked = cb.checked);
+  updateSelCount();
 }
 
-async function saveModelDetail(){
-  const m=D.editM;if(!m)return;
-  const updated={
-    id:m.id,
-    name:document.getElementById('e_name').value,
-    provider:document.getElementById('e_provider').value,
-    tier:parseInt(document.getElementById('e_tier').value)||0,
-    architecture:document.getElementById('e_arch').value,
-    status:document.getElementById('e_status').value,
-    agent_ready:document.getElementById('e_ready').value==='true',
-    speed_rating:parseInt(document.getElementById('e_speed').value)||0,
-    context_window:parseInt(document.getElementById('e_ctx').value)||0,
-    gpu:document.getElementById('e_gpu').value,
-    cost:{
-      type:document.getElementById('e_ctype').value,
-      amount:parseFloat(document.getElementById('e_camount').value)||0,
-      period:document.getElementById('e_cperiod').value,
-      limits:document.getElementById('e_climits').value,
-      source_url:document.getElementById('e_csource').value,
-      last_checked:new Date().toISOString().split('T')[0]
+function updateSelCount() {
+  const sel = document.querySelectorAll('.mchk:checked');
+  $('selCount').textContent = sel.length ? sel.length + ' selected' : '';
+  $('bulkDisBtn').style.display = sel.length ? 'inline-block' : 'none';
+  $('bulkEnaBtn').style.display = sel.length ? 'inline-block' : 'none';
+}
+
+async function bulkDisable() {
+  const sel = Array.from(document.querySelectorAll('.mchk:checked')).map(x => x.dataset.id);
+  const c = DS.config || {};
+  const dis = new Set(c.disabled_models || []);
+  sel.forEach(x => dis.add(x));
+  const r = await api('/api/config', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ disabled_models: [...dis] })
+  });
+  if (r.ok) { toast('Disabled ' + sel.length + ' models', 'success'); await initLoad(); } else toast('Failed', 'error');
+}
+
+async function bulkEnable() {
+  const sel = Array.from(document.querySelectorAll('.mchk:checked')).map(x => x.dataset.id);
+  const c = DS.config || {};
+  const dis = (c.disabled_models || []).filter(x => !sel.includes(x));
+  const r = await api('/api/config', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ disabled_models: dis })
+  });
+  if (r.ok) { toast('Enabled ' + sel.length + ' models', 'success'); await initLoad(); } else toast('Failed', 'error');
+}
+
+async function disableModel(id) {
+  const c = DS.config || {};
+  const dis = [...new Set([...(c.disabled_models||[]), id])];
+  const r = await api('/api/config', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ disabled_models: dis })
+  });
+  if (r.ok) { toast('Disabled: ' + id, 'success'); await initLoad(); } else toast('Failed', 'error');
+}
+
+async function enableModel(id) {
+  const c = DS.config || {};
+  const dis = (c.disabled_models || []).filter(x => x !== id);
+  const r = await api('/api/config', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ disabled_models: dis })
+  });
+  if (r.ok) { toast('Enabled: ' + id, 'success'); await initLoad(); } else toast('Failed', 'error');
+}
+
+async function cycleModelSpeed(id, cur) {
+  const all = DS.all ? DS.all.models.models : [];
+  const m = all.find(x => x.id === id);
+  if (!m) return;
+  const newVal = ((cur||0) % 5) + 1;
+  const r = await api('/api/models', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ id, speed_rating: newVal })
+  });
+  if (r && r.ok) { toast('Speed: ' + newVal + '/5', 'success'); await initLoad(); }
+}
+
+async function togFreeMode() {
+  const cur = DS.config ? DS.config.free_only_mode : false;
+  const r = await api('/api/config', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ free_only_mode: !cur })
+  });
+  if (r.ok) { toast('Free-Only: ' + (!cur ? 'ON' : 'OFF'), 'success'); await initLoad(); }
+}
+
+/* ── Model Detail Modal ── */
+async function openModelDetail(id) {
+  const r = await api('/api/models?id=' + encodeURIComponent(id));
+  if (r.error) { toast('Not found', 'error'); return; }
+  const m = r;
+  const disabled = (DS.config && DS.config.disabled_models) || [];
+  const isDis = disabled.includes(m.id);
+  const cap = m.capabilities || {};
+  const cost = { type:m.cost_type||'?', amount:m.cost_amount||0, period:m.cost_period||'', limits:m.cost_limits||'', source_url:m.cost_source||'', last_checked:m.cost_last_checked||'' };
+
+  let h = '<div class="modal-header"><h2>' + esc(m.name||m.id) + '</h2>' +
+    '<div style="display:flex;gap:4px">' +
+    '<button class="btn btn-sm btn-success" onclick="saveModelEdit()">💾 Save</button>' +
+    '<button class="btn btn-sm" onclick="closeModal(); initLoad();">Cancel</button></div></div>';
+
+  h += '<div class="modal-form">' +
+    '<div class="row"><label>Name</label><div class="val"><input id="me_name" value="' + esc(m.name||'') + '"></div></div>' +
+    '<div class="row"><label>ID</label><div class="val" style="font-family:monospace;color:var(--text-dim)">' + esc(m.id) + ' <span style="font-size:10px">(read-only)</span></div></div>' +
+    '<div class="row"><label>Provider</label><div class="val"><input id="me_provider" value="' + esc(m.provider||'') + '"></div></div>' +
+    '<div class="row"><label>Tier</label><div class="val"><select id="me_tier"><option value="">—</option><option value="1"' + (m.tier===1?' selected':'') + '>T1</option><option value="2"' + (m.tier===2?' selected':'') + '>T2</option><option value="3"' + (m.tier===3?' selected':'') + '>T3</option><option value="4"' + (m.tier===4?' selected':'') + '>T4</option></select></div></div>' +
+    '<div class="row"><label>Architecture</label><div class="val"><input id="me_arch" value="' + esc(m.architecture||'') + '"></div></div>' +
+    '<div class="row"><label>Status</label><div class="val"><select id="me_status"><option value="active"' + (m.status==='active'?' selected':'') + '>Active</option><option value="broken"' + (m.status==='broken'?' selected':'') + '>Broken</option><option value="removed"' + (m.status==='removed'?' selected':'') + '>Removed</option></select></div></div>' +
+    '<div class="row"><label>Agent Ready</label><div class="val"><select id="me_ready"><option value="true"' + (m.agent_ready?' selected':'') + '>Yes</option><option value="false"' + (!m.agent_ready?' selected':'') + '>No</option></select></div></div>' +
+    '<div class="row"><label>Speed (0-5)</label><div class="val"><input id="me_speed" type="number" min="0" max="5" value="' + (m.speed_rating||0) + '"></div></div>' +
+    '<div class="row"><label>Context Window</label><div class="val"><input id="me_ctx" type="number" value="' + (m.context_window||0) + '"></div></div>' +
+    '<div class="row"><label>GPU</label><div class="val"><input id="me_gpu" value="' + esc(m.gpu||'') + '"></div></div>' +
+    '<div style="margin:12px 0 4px;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.3px">Pricing</div>' +
+    '<div class="row"><label>Cost Type</label><div class="val"><select id="me_ctype"><option value="free"' + (cost.type.includes('free')?' selected':'') + '>Free</option><option value="free_tier"' + (cost.type==='free_tier'?' selected':'') + '>Free Tier</option><option value="subscription"' + (cost.type==='subscription'?' selected':'') + '>Subscription</option><option value="payg"' + (cost.type==='payg'?' selected':'') + '>Pay-as-you-go</option><option value="pay_per_token"' + (cost.type==='pay_per_token'?' selected':'') + '>Pay per Token</option></select></div></div>' +
+    '<div class="row"><label>Amount ($)</label><div class="val"><input id="me_camt" type="number" step="0.01" value="' + (cost.amount||0) + '"></div></div>' +
+    '<div class="row"><label>Period</label><div class="val"><input id="me_cper" value="' + esc(cost.period||'') + '"placeholder="monthly"></div></div>' +
+    '<div class="row"><label>Limits</label><div class="val"><input id="me_clim" value="' + esc(cost.limits||'') + '"placeholder="100K/day"></div></div>' +
+    '<div class="row"><label>Source URL</label><div class="val"><input id="me_csrc" value="' + esc(cost.source_url||'') + '"placeholder="https://..."></div></div>' +
+    '<div style="margin:12px 0 4px;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.3px">Capabilities</div>' +
+    '<div class="row"><label>Reasoning</label><div class="val"><input id="me_creas" type="number" min="0" max="5" value="' + (cap.reasoning||0) + '"></div></div>' +
+    '<div class="row"><label>Coding</label><div class="val"><input id="me_ccode" type="number" min="0" max="5" value="' + (cap.coding||0) + '"></div></div>' +
+    '<div class="row"><label>Creative</label><div class="val"><input id="me_ccrea" type="number" min="0" max="5" value="' + (cap.creative||0) + '"></div></div>' +
+    '<div class="row"><label>Vision</label><div class="val"><select id="me_cvis"><option value="true"' + (cap.vision?' selected':'') + '>Yes</option><option value="false"' + (!cap.vision?' selected':'') + '>No</option></select></div></div>' +
+    '<div class="row"><label>Tool Calls</label><div class="val"><select id="me_ctool"><option value="true"' + (cap.tool_calls?' selected':'') + '>Yes</option><option value="false"' + (!cap.tool_calls?' selected':'') + '>No</option></select></div></div>' +
+    '<div class="row"><label>Thinking</label><div class="val"><select id="me_cthink"><option value="true"' + (cap.thinking?' selected':'') + '>Yes</option><option value="false"' + (!cap.thinking?' selected':'') + '>No</option></select></div></div>' +
+    '<div style="margin:12px 0 4px;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.3px">Notes</div>' +
+    '<div class="row"><label>User Notes</label><div class="val"><textarea id="me_unotes">' + esc(m.user_notes||'') + '</textarea></div></div>' +
+    '<div class="row"><label>Research Notes</label><div class="val"><textarea id="me_rnotes">' + esc(m.research_notes||'') + '</textarea></div></div>' +
+    '<div class="row"><label>Last Tested</label><div class="val"><input id="me_tested" value="' + esc(m.last_tested||'') + '"placeholder="YYYY-MM-DD"></div></div></div>';
+
+  h += '<div style="margin-top:14px;display:flex;gap:6px;align-items:center">' +
+    (isDis ? '<span style="color:var(--red);font-size:11px">⛔ Blocked</span>' : '<span style="color:var(--green);font-size:11px">✅ Allowed</span>') +
+    '<button class="btn btn-sm ' + (isDis?'btn-success':'btn-danger') + '" style="margin-left:auto" onclick="' + (isDis?'enableModel(\'' + esc(m.id) + '\');closeModal()':'disableModel(\'' + esc(m.id) + '\');closeModal()') + '">' + (isDis?'Enable Routing':'Disable Routing') + '</button>' +
+    '<button class="btn btn-sm btn-danger" onclick="deleteModel(\'' + esc(m.id) + '\')">🗑 Delete</button></div>';
+
+  MODAL_CB = { id: m.id, name: m.name, provider: m.provider };
+  openModal(h);
+}
+
+async function saveModelEdit() {
+  const cb = MODAL_CB;
+  if (!cb) return;
+  const updated = {
+    id: cb.id,
+    name: $('me_name').value,
+    provider: $('me_provider').value,
+    tier: parseInt($('me_tier').value) || 0,
+    architecture: $('me_arch').value,
+    status: $('me_status').value,
+    agent_ready: $('me_ready').value === 'true',
+    speed_rating: parseInt($('me_speed').value) || 0,
+    context_window: parseInt($('me_ctx').value) || 0,
+    gpu: $('me_gpu').value,
+    cost: {
+      type: $('me_ctype').value,
+      amount: parseFloat($('me_camt').value) || 0,
+      period: $('me_cper').value,
+      limits: $('me_clim').value,
+      source_url: $('me_csrc').value,
+      last_checked: new Date().toISOString().split('T')[0],
     },
-    capabilities:{
-      reasoning:parseInt(document.getElementById('e_creason').value)||0,
-      coding:parseInt(document.getElementById('e_ccoding').value)||0,
-      creative:parseInt(document.getElementById('e_ccreative').value)||0,
-      vision:document.getElementById('e_cvision').value==='true',
-      tool_calls:document.getElementById('e_ctools').value==='true',
-      thinking:document.getElementById('e_cthinking').value==='true'
+    capabilities: {
+      reasoning: parseInt($('me_creas').value) || 0,
+      coding: parseInt($('me_ccode').value) || 0,
+      creative: parseInt($('me_ccrea').value) || 0,
+      vision: $('me_cvis').value === 'true',
+      tool_calls: $('me_ctool').value === 'true',
+      thinking: $('me_cthink').value === 'true',
     },
-    user_notes:document.getElementById('e_unotes').value,
-    research_notes:document.getElementById('e_rnotes').value,
-    last_tested:document.getElementById('e_tested').value,
-    // Preserve existing fields
-    research_sources:m.research_sources||[],
-    catalogued_by:m.catalogued_by||'dashboard'
+    user_notes: $('me_unotes').value,
+    research_notes: $('me_rnotes').value,
+    last_tested: $('me_tested').value,
+    catalogued_by: 'dashboard',
   };
-  const r=await api('/api/models',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(updated)});
-  if(r&&r.ok){toast('Saved: '+updated.id,true);editMode=false;await refresh();await openModelDetail(updated.id)}
-  else toast('Save failed: '+(r&&r.error||'unknown'),false)}
-
-async function deleteModel(id){
-  if(!confirm('Delete "'+id+'"? Cannot be undone.'))return;
-  const r=await api('/api/models?id='+encodeURIComponent(id),{method:'DELETE'});
-  if(r&&r.ok){toast('Deleted: '+id,true);closeMod('mmod');await refresh()}else toast('Failed',false)}
-
-function openNewModel(){
-  const m={id:'provider/model-name',name:'',provider:'',status:'active',agent_ready:true,speed_rating:3,context_window:128000,cost:{type:'free',amount:0,period:'',limits:'',source_url:''},capabilities:{reasoning:3,coding:3,creative:3,vision:false,tool_calls:true,thinking:false},user_notes:'',research_notes:'',catalogued_by:'dashboard',last_tested:''};
-  editMid=null;editMode=true;renderModelDetail(m);
+  const r = await api('/api/models', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(updated)
+  });
+  if (r && r.ok) { toast('Saved: ' + cb.id, 'success'); closeModal(); await initLoad(); }
+  else toast('Save failed', 'error');
 }
 
-function closeMod(id){document.getElementById(id).classList.remove('open');editMode=false;editMid=null;D.editM=null}
+async function deleteModel(id) {
+  if (!confirm('Delete "' + id + '"?')) return;
+  const r = await api('/api/models?id=' + encodeURIComponent(id), { method: 'DELETE' });
+  if (r.ok) { toast('Deleted: ' + id, 'success'); closeModal(); await initLoad(); }
+  else toast('Failed', 'error');
+}
 
-// ═══════════════════════════════════════════════════════════
-// PROJECTS TAB
-// ═══════════════════════════════════════════════════════════
-function renderProjects(){
-  const p=D.projects;
-  if(!p||!p.projects.length){
-    document.getElementById('pstats').innerHTML='<div class="card">No projects yet.</div>';return;
+function openNewModel() {
+  const h = '<div class="modal-header"><h2>New Model</h2><button class="btn btn-sm" onclick="closeModal()">✕</button></div>' +
+    '<p style="font-size:11px;color:var(--text-dim);margin-bottom:10px">Enter model details. Required: ID (e.g. provider/model-name)</p>';
+  openModal(h);
+  toast('Use Ctrl+S to create — manual entry form coming', 'info');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LOGS TAB
+   ═══════════════════════════════════════════════════════════════ */
+async function loadLogs() {
+  const level = $('logLevel').value;
+  const source = $('logSource').value;
+  let path = '/api/logs?limit=200';
+  if (level) path += '&level=' + level;
+  if (source) path += '&source=' + source;
+  const r = await api(path);
+  if (r.error) { $('logViewer').innerHTML = '<div class="logs-empty">Error: ' + r.error + '</div>'; return; }
+
+  if (!r.entries || !r.entries.length) {
+    $('logViewer').innerHTML = '<div class="logs-empty">No log entries.</div>';
+    return;
   }
-  const cfg=D.config||{},pc=cfg.projects||{};
-  document.getElementById('pstats').innerHTML=`
-    <div class="card st"><div class="v">${p.count}</div><div class="l">Projects</div></div>
-    <div class="card st"><div class="v">${p.projects.filter(x=>x.session_count>0).length}</div><div class="l">Active</div></div>`;
-  let h='';
-  for(const proj of p.projects){
-    const al=proj.allowlist_count||0,fo=proj.free_only||false;
-    const pc2=pc[proj.name]||{};
-    const loc=pc2.location||'';
-    const lastSess=proj.sessions&&proj.sessions.length?proj.sessions[proj.sessions.length-1]:null;
-    const lastActive=lastSess?lastSess.logged_at||lastSess.date||'':'';
-    h+=`<div class="card" style="margin-bottom:8px;cursor:pointer" onclick="openProjDetail('${escv(proj.name)}')"
-         onmouseenter="this.style.borderColor='var(--blue)'" onmouseleave="this.style.borderColor='var(--border)'">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
-        <div>
-          <div style="font-weight:600;color:#fff;font-size:14px">📁 ${esc(proj.name)}</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:3px">
-            ${proj.session_count} sessions · ${proj.task_count||0} tasks
-            ${lastActive?' · <span style="color:var(--green)">Last: '+esc(lastActive)+'</span>':''}
-          </div>
-          <div style="margin-top:5px">
-            ${al?`<span class="pill g">${al} whitelisted</span>`:''}
-            ${fo?`<span class="pill b">FREE ONLY</span>`:''}
-            ${!al&&!fo?`<span style="font-size:11px;color:var(--muted)">All models allowed</span>`:''}
-            ${loc?`<span style="font-size:10px;color:var(--muted);margin-left:6px;font-family:monospace">${esc(loc)}</span>`:''}
-          </div>
-          ${lastSess?`<div style="font-size:11px;color:var(--muted);margin-top:4px">Last task: <span style="color:var(--blue)">${esc(lastSess.task||'')}</span> (${esc(lastSess.status||'')})</div>`:''}
-        </div>
-        <div style="display:flex;gap:4px;flex-shrink:0" onclick="event.stopPropagation()">
-          <button class="btn btn-y btn-xs" onclick="openProjConfig('${escv(proj.name)}')">⚙ Model Config</button>
-          <button class="btn btn-xs" onclick="togProjFree('${escv(proj.name)}',${!fo})">${fo?'Disable':'Enable'} Free-Only</button>
-        </div>
-      </div></div>`;
-  }
-  document.getElementById('plist').innerHTML=h;
-}
 
-async function openProjConfig(name){
-  const all=await api('/api/models?all=1');
-  const pc=((D.config||{}).projects||{})[name]||{};
-  const wl=pc.model_allowlist||[],fo=pc.free_only||false;
-  const models=all.models||[];
-
-  let h=`<div class="mh"><h2>Allowlist — ${esc(name)}</h2><button class="btn btn-m" onclick="closeMod('pmod')">Close</button></div>`;
-  h+=`<p style="font-size:12px;color:var(--muted);margin-bottom:10px">Select which models this project can use. Empty = all allowed (subject to global filters).</p>`;
-
-  // Free-only toggle
-  h+=`<div style="margin-bottom:14px;display:flex;align-items:center;gap:10px">
-    <div class="tog" onclick="togPill('pfp','pfc')"><span class="lbl">Per-Project Free-Only</span><div class="sw ${fo?' on':''}" id="pfc"></div></div>
-    <span class="pill g" id="pfp" style="display:${fo?'inline-flex':'none'}">ON</span>
-    <button class="btn btn-g btn-xs" onclick="saveProjCfg('${escv(name)}')">💾 Save</button>
-  </div>`;
-
-  // Search
-  h+=`<input class="inp" id="alSearch" placeholder="Search models..." oninput="filterAlp()" style="width:100%;margin-bottom:8px"><br>`;
-
-  // Picker
-  h+=`<div class="alp" id="alp">`;
-  for(const m of models){
-    const ck=wl.includes(m.id)?'checked':'';
-    h+=`<label class="ali"><input type="checkbox" value="${escv(m.id)}" ${ck} class="alcb">
-      <div><div class="nm">${esc(m.name||m.id.split('/').pop())}</div><div class="id">${esc(m.id)}</div></div></label>`;
-  }
-  h+=`</div>`;
-  h+=`<div style="font-size:11px;color:var(--muted)">${wl.length} currently whitelisted</div>`;
-  document.getElementById('pcont').innerHTML=h;
-  document.getElementById('pmod').classList.add('open');
-}
-
-function filterAlp(){
-  const q=(document.getElementById('alSearch').value||'').toLowerCase();
-  document.querySelectorAll('#alp .ali').forEach(el=>{el.style.display=el.textContent.toLowerCase().includes(q)?'flex':'none'})}
-function togPill(pid,cid){const p=document.getElementById(pid),c=document.getElementById(cid);if(c.classList.contains('on')){c.classList.remove('on');p.style.display='none'}else{c.classList.add('on');p.style.display='inline-flex'}}
-async function saveProjCfg(name){
-  const checks=document.querySelectorAll('#alp .alcb:checked');
-  const wl=Array.from(checks).map(c=>c.value);
-  const fo=document.getElementById('pfc').classList.contains('on');
-  const r=await api('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({projects:{[name]:{model_allowlist:wl,free_only:fo}}})});
-  if(r&&r.ok){toast('Saved: '+name+' ('+wl.length+' models)',true);closeMod('pmod');await refresh()}else toast('Failed',false)}
-async function togProjFree(name,val){
-  const pc=((D.config||{}).projects||{})[name]||{};
-  const r=await api('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({projects:{[name]:{model_allowlist:pc.model_allowlist||[],free_only:val}}})});
-  if(r&&r.ok){toast('Free-only '+(val?'ON':'OFF')+' for '+name,true);await refresh()}else toast('Failed',false)}
-
-// ═══════════════════════════════════════════════════════════
-// SESSIONS TAB
-// ═══════════════════════════════════════════════════════════
-function renderSessions(){
-  const ss=D.sessions;
-  if(!ss||!ss.sessions||!ss.sessions.length){
-    document.getElementById('scontent').innerHTML='<h2>Sessions</h2><p style="color:var(--muted)">No sessions logged.</p>';return;
-  }
-  let h='<h2>Sessions ('+ss.count+')</h2><div class="tw"><table><tr><th>Date</th><th>Project</th><th>Task</th><th>Model</th><th>Agent</th><th>QA</th><th>Status</th></tr>';
-  for(const s of ss.sessions){
-    h+=`<tr><td>${esc(s.date)}</td><td>${esc(s.project)}</td>
-      <td style="font-family:monospace;font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis">${esc(s.task)}</td>
-      <td>${esc(s.model)}</td><td>${s.agent||'shell'}</td>
-      <td>${s.qa_done?'<span style="color:var(--green)">✓</span>':'–'}</td><td>${esc(s.status)}</td></tr>`;
-  }
-  h+='</table></div>';
-  document.getElementById('scontent').innerHTML=h;
-}
-
-// ═══════════════════════════════════════════════════════════
-// PRICES TAB
-// ═══════════════════════════════════════════════════════════
-function renderPrices(){
-  const p=D.prices;
-  if(!p||!p.entries.length){
-    document.getElementById('prcontent').innerHTML='<h2>Price Changes</h2><p style="color:var(--muted)">No entries.</p>';return;
-  }
-  let h='<h2>Price Changes ('+p.count+')</h2><pre style="font-family:monospace;font-size:11px;white-space:pre-wrap;max-height:400px;overflow-y:auto">';
-  for(const e of p.entries)h+=esc(e.text)+'\n';
-  h+='</pre>';
-  document.getElementById('prcontent').innerHTML=h;
-}
-
-// ── INIT ──
-// ═══════════════════════════════════════════════════════════
-// PROJECT DETAIL — Doc Editor, Sessions, Files
-// ═══════════════════════════════════════════════════════════
-let curProj=null,curDocTab='state',docEditing=false,docOrigContent='';
-
-function openProjDetail(name){
-  document.getElementById('plist').style.display='none';
-  document.getElementById('pdetail').style.display='block';
-  document.getElementById('pd-name').textContent=name;
-  loadProjDetail(name);
-}
-function closeProjDetail(){
-  document.getElementById('plist').style.display='block';
-  document.getElementById('pdetail').style.display='none';
-  curProj=null;curDocTab='state';docEditing=false;
-}
-async function loadProjDetail(name){
-  curProj=name;
-  const state=await api('/api/project-state?name='+encodeURIComponent(name));
-  D.projectState=state;
-  renderDocTab();
-}
-function switchDocTab(tab){
-  curDocTab=tab;docEditing=false;
-  document.querySelectorAll('[data-dtab]').forEach(el=>el.classList.toggle('a',el.dataset.dtab===tab));
-  renderDocTab();
-}
-function renderDocTab(){
-  const state=D.projectState;if(!state)return;
-  const editor=document.getElementById('docEditor');
-  const preview=document.getElementById('docPreview');
-  const sessionsArea=document.getElementById('docSessionsArea');
-  const filesArea=document.getElementById('docFilesArea');
-  const agentArea=document.getElementById('docAgentArea');
-  const editorArea=document.getElementById('docEditorArea');
-  sessionsArea.style.display='none';filesArea.style.display='none';agentArea.style.display='none';
-  if(curDocTab==='sessions'){
-    editorArea.style.display='none';sessionsArea.style.display='block';
-    const tbody=document.getElementById('projSessionsBody');
-    if(!state.sessions||!state.sessions.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:16px">No sessions</td></tr>';return;}
-    let h='';for(const s of state.sessions){h+=`<tr><td>${esc(s.date||'')}</td><td style="font-family:monospace;font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis">${esc(s.task||'')}</td><td>${esc(s.model||'')}</td><td>${esc(s.agent||'shell')}</td><td>${esc(s.status||'')}</td><td>${esc(s.duration||'')}</td></tr>`;}
-    tbody.innerHTML=h;return;
-  }
-  if(curDocTab==='files'){
-    editorArea.style.display='none';filesArea.style.display='block';renderProjFiles();return;
-  }
-  if(curDocTab==='agent'){
-    editorArea.style.display='none';agentArea.style.display='block';renderAgentTab();return;
-  }
-  editorArea.style.display='block';
-  const dm={state:'STATE.md',roadmap:'ROADMAP.md',context:'CONTEXT.md',notes:'NOTES.md'};
-  const cm={state:state.state||'',roadmap:state.roadmap||'',context:state.context||'',notes:state.notes||''};
-  document.getElementById('docFileName').textContent=dm[curDocTab];
-  docOrigContent=cm[curDocTab];docEditing=false;
-  editor.value=docOrigContent;editor.disabled=true;
-  preview.style.display='none';editor.style.display='block';
-  document.getElementById('docEditBtn').style.display='inline-block';
-  document.getElementById('docSaveBtn').style.display='none';
-  document.getElementById('docCancelBtn').style.display='none';
-  preview.innerHTML=renderMd(docOrigContent);
-}
-function toggleDocEdit(){
-  docEditing=true;
-  const e=document.getElementById('docEditor');e.disabled=false;e.style.display='block';
-  document.getElementById('docPreview').style.display='none';
-  document.getElementById('docEditBtn').style.display='none';
-  document.getElementById('docSaveBtn').style.display='inline-block';
-  document.getElementById('docCancelBtn').style.display='inline-block';
-}
-function cancelDocEdit(){
-  docEditing=false;const e=document.getElementById('docEditor');
-  e.value=docOrigContent;e.disabled=true;
-  document.getElementById('docEditBtn').style.display='inline-block';
-  document.getElementById('docSaveBtn').style.display='none';
-  document.getElementById('docCancelBtn').style.display='none';
-}
-async function saveDoc(){
-  const content=document.getElementById('docEditor').value;
-  const dm={state:'STATE.md',roadmap:'ROADMAP.md',context:'CONTEXT.md',notes:'NOTES.md'};
-  const r=await api('/api/project-doc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:curProj,file:dm[curDocTab],content})});
-  if(r&&r.ok){
-    toast('Saved: '+dm[curDocTab],true);docEditing=false;
-    document.getElementById('docEditor').disabled=true;
-    document.getElementById('docEditBtn').style.display='inline-block';
-    document.getElementById('docSaveBtn').style.display='none';
-    document.getElementById('docCancelBtn').style.display='none';
-    if(D.projectState){const k=curDocTab==='state'?'state':curDocTab==='roadmap'?'roadmap':curDocTab==='context'?'context':'notes';D.projectState[k]=content;}
-    document.getElementById('docPreview').innerHTML=renderMd(content);
-  }else toast('Save failed',false);
-}
-function renderProjFiles(){
-  const state=D.projectState;if(!state)return;
-  const docs=state.docs||[];let h='';
-  for(const f of docs){
-    h+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px;border-bottom:1px solid var(--border)"><div><span style="font-size:12px">${f.is_md?'📄':'📁'} ${esc(f.name)}</span><span style="font-size:10px;color:var(--muted);margin-left:8px">${f.size}B</span></div><div style="display:flex;gap:4px">${f.is_md?`<button class="btn btn-xs" onclick="openDocFile('${escv(f.name)}')">Open</button>`:''}<button class="btn btn-r btn-xs" onclick="deleteDocFile('${escv(f.name)}')">Delete</button></div></div>`;
-  }
-  if(!h)h='<p style="color:var(--muted);font-size:12px">No files yet.</p>';
-  document.getElementById('projFilesList').innerHTML=h;
-}
-async function openDocFile(fn){
-  const c=await api('/api/project-doc?name='+encodeURIComponent(curProj)+'&file='+encodeURIComponent(fn));
-  if(c&&c.content!==undefined){
-    document.getElementById('docFileName').textContent=fn;
-    const e=document.getElementById('docEditor');e.value=c.content;e.disabled=true;
-    document.getElementById('docPreview').innerHTML=renderMd(c.content);
-    document.getElementById('docEditBtn').style.display='inline-block';
-    document.getElementById('docSaveBtn').style.display='none';
-    document.getElementById('docCancelBtn').style.display='none';
-    document.getElementById('docEditorArea').style.display='block';
-    document.getElementById('docSessionsArea').style.display='none';
-    document.getElementById('docFilesArea').style.display='none';
-    docEditing=false;docOrigContent=c.content;
-  }
-}
-async function deleteDocFile(fn){
-  if(!confirm('Delete "'+fn+'"?'))return;
-  const r=await api('/api/project-doc?name='+encodeURIComponent(curProj)+'&file='+encodeURIComponent(fn),{method:'DELETE'});
-  if(r&&r.ok){toast('Deleted: '+fn,true);await loadProjDetail(curProj)}else toast('Failed',false);
-}
-async function createDocFile(){
-  const fn=document.getElementById('newFileName').value.trim();
-  if(!fn)return toast('Enter filename',false);
-  const r=await api('/api/project-doc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:curProj,file:fn,content:'# '+fn+'\n\n'})});
-  if(r&&r.ok){toast('Created: '+fn,true);document.getElementById('newFileName').value='';await loadProjDetail(curProj)}else toast('Failed',false);
-}
-function togProjFreeCur(){
-  if(!curProj)return;
-  const s=D.projectState;const cur=s&&s.config?s.config.free_only:false;
-  togProjFree(curProj,!cur);if(s)s.config.free_only=!cur;
-}
-function renderMd(md){
-  if(!md)return '<p style="color:var(--muted)">No content yet. Click Edit to start.</p>';
-  let h=md.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/^### (.+)$/gm,'<h3 style="font-size:14px;font-weight:600;color:#fff;margin:12px 0 6px">$1</h3>')
-    .replace(/^## (.+)$/gm,'<h2 style="font-size:16px;font-weight:700;color:#fff;margin:14px 0 8px">$1</h2>')
-    .replace(/^# (.+)$/gm,'<h1 style="font-size:18px;font-weight:700;color:#fff;margin:16px 0 10px">$1</h1>')
-    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g,'<em>$1</em>')
-    .replace(/`(.+?)`/g,'<code style="background:rgba(88,166,255,.1);padding:1px 4px;border-radius:3px;font-size:11px">$1</code>')
-    .replace(/^- (.+)$/gm,'<li style="margin:3px 0 3px 16px">$1</li>')
-    .replace(/\n\n/g,'</p><p style="margin:8px 0">').replace(/\n/g,'<br>');
-  return '<p style="margin:8px 0">'+h+'</p>';
-}
-
-// ── AGENT / MANAGER TAB ──
-function renderAgentTab(){
-  const state=D.projectState;
-  if(!state||!state.sessions)return;
-  const sessions=state.sessions;
-  const lastSess=sessions.length?sessions[sessions.length-1]:null;
-  document.getElementById('mgStatus').innerHTML='<span class="pill g">Active</span>';
-  document.getElementById('mgSession').textContent=lastSess?'session_'+state.name:'—';
-  document.getElementById('mgTask').textContent=lastSess?lastSess.task||'—':'—';
-  document.getElementById('mgModel').textContent=lastSess?lastSess.model||'—':'—';
-  document.getElementById('mgSubCount').textContent=lastSess?'0 (tracking not yet live)':'—';
-
-  // Build sub-agent tree from session context
-  let treeHtml='';
-  if(sessions.length){
-    treeHtml+='<div style="margin-bottom:4px;color:var(--green)">📁 Project: '+esc(state.name)+'</div>';
-    for(let i=0;i<Math.min(sessions.length,15);i++){
-      const s=sessions[i];
-      const icon=s.status==='complete'||s.status==='done'?'✅':s.status==='in_progress'?'🔄':'❌';
-      const depth=i>0?'&nbsp;&nbsp;├─ ':'&nbsp;&nbsp;└─ ';
-      treeHtml+='<div style="padding-left:'+Math.min(i*16,48)+'px">'+depth+icon+' '+esc(s.task||'')+' <span style="color:var(--muted);font-size:10px">('+esc(s.model||'')+' | '+esc(s.duration||'')+')</span></div>';
+  // Populate source filter if first time
+  const srcSel = $('logSource');
+  if (srcSel.options.length <= 1 && r.sources) {
+    for (const s of r.sources) {
+      const o = document.createElement('option');
+      o.value = s; o.textContent = s;
+      srcSel.appendChild(o);
     }
-    if(sessions.length>15)treeHtml+='<div style="padding-left:48px;color:var(--muted)">... and '+(sessions.length-15)+' more</div>';
-  } else {
-    treeHtml='<div style="color:var(--muted)">No sessions recorded.</div>';
   }
-  document.getElementById('subAgentTree').innerHTML=treeHtml;
+
+  DS.logs = r.entries;
+  let h = '';
+  for (const e of r.entries) {
+    const lvl = e.level || 'info';
+    h += '<div class="log-line"><span class="ts">' + fmtTime(e.ts) + '</span>' +
+      '<span class="lv ' + lvl + '">' + esc(lvl) + '</span>' +
+      '<span class="src">' + esc(e.source||'') + '</span>' +
+      '<span class="msg">' + esc(e.msg||'') + '</span></div>';
+  }
+  $('logViewer').innerHTML = h;
+  if ($('logAutoScroll').checked) {
+    $('logViewer').scrollTop = $('logViewer').scrollHeight;
+  }
 }
 
-// ── INIT ──
-refresh();
-setInterval(refresh,30000);
+$('logLevel').addEventListener('change', loadLogs);
+$('logSource').addEventListener('change', loadLogs);
+$('logAutoScroll').addEventListener('change', () => {
+  LOGS_AUTO_SCROLL = $('logAutoScroll').checked;
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   SETTINGS TAB
+   ═══════════════════════════════════════════════════════════════ */
+function renderSettings() {
+  const cfg = DS.config || {};
+  const grid = $('settingsGrid');
+  grid.innerHTML =
+    '<div class="settings-card"><h3>🚀 Orchestrator</h3>' +
+    '<div class="settings-row"><span class="sl">Free-Only Mode</span><div class="toggle-sw' + (cfg.free_only_mode?' on':'') + '" onclick="togFreeMode()"></div></div>' +
+    '<div class="settings-row"><span class="sl">Disabled Models</span><span class="sv">' + ((cfg.disabled_models||[]).length) + '</span></div>' +
+    '<div class="settings-row"><span class="sl">Auto-Refresh</span><span class="sv">' + (cfg.auto_refresh_seconds||30) + 's</span></div>' +
+    '<div class="settings-row"><span class="sl">Data Directory</span><span class="sv" style="font-size:9px">' + (DS.all && DS.all.status ? esc(DS.all.status.data_dir||'') : '—') + '</span></div></div>' +
+    '<div class="settings-card"><h3>📊 System</h3>' +
+    '<div class="settings-row"><span class="sl">Server Version</span><span class="sv">v4</span></div>' +
+    '<div class="settings-row"><span class="sl">SSE Status</span><span class="sv" id="setSse">connected</span></div>' +
+    '<div class="settings-row"><span class="sl">Projects Configured</span><span class="sv">' + ((DS.all&&DS.all.status) ? DS.all.status.projects_configured||0 : '—') + '</span></div>' +
+    '<div class="settings-row"><span class="sl">Price Check</span><span class="sv">' + ((DS.all&&DS.all.status) ? esc(DS.all.status.nightly_price_check||'—') : '—') + '</span></div></div>' +
+    '<div class="settings-card"><h3>🎨 Theme</h3>' +
+    '<div class="settings-row"><span class="sl">Theme</span><span class="sv">Dark (only)</span></div>' +
+    '<div class="settings-row"><span class="sl">Font</span><span class="sv">JetBrains Mono</span></div></div>' +
+    '<div class="settings-card"><h3>🔧 Maintenance</h3>' +
+    '<div class="settings-row"><span class="sl">Nightly Model Populate</span><span class="sv">3:00 AM</span></div>' +
+    '<div class="settings-row"><span class="sl">Log Retention</span><span class="sv">30 days</span></div>' +
+    '<div class="settings-row"><span class="sl">Maintenance Interval</span><span class="sv">30 min</span></div>' +
+    '<button class="btn btn-sm" style="margin-top:8px" onclick="initLoad()">↻ Reload All Data</button></div>';
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MODAL
+   ═══════════════════════════════════════════════════════════════ */
+function openModal(html) {
+  $('modalContent').innerHTML = html;
+  $('modalOverlay').classList.add('open');
+}
+
+function closeModal() {
+  $('modalOverlay').classList.remove('open');
+  MODAL_CB = null;
+}
+
+function openAgentModal(name) {
+  const agents = DS.agents || [];
+  const a = agents.find(x => x.name === name);
+  if (!a) return toast('Agent not found', 'error');
+  let depthHtml = '';
+  if (a.subagent_depth > 0) depthHtml = '<div class="row" style="margin-top:8px"><label>Sub-agents</label><div class="val">' + a.subagent_depth + '</div></div>';
+  const h = '<div class="modal-header"><h2>' + esc(a.name||'Agent') + '</h2><button class="btn btn-sm" onclick="closeModal()">✕</button></div>' +
+    '<div class="modal-form">' +
+    '<div class="row"><label>Status</label><div class="val"><span class="status-badge ' + (a.status||'active') + '">' + esc(a.status||'active') + '</span></div></div>' +
+    '<div class="row"><label>Project</label><div class="val">' + esc(a.project||'—') + '</div></div>' +
+    '<div class="row"><label>Task</label><div class="val">' + esc(a.task||'—') + '</div></div>' +
+    '<div class="row"><label>Model</label><div class="val">' + esc(a.model||'—') + '</div></div>' +
+    depthHtml +
+    (a.last_seen ? '<div class="row"><label>Last Seen</label><div class="val">' + timeAgo(a.last_seen) + '</div></div>' : '') +
+    '</div>';
+  openModal(h);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BOOT
+   ═══════════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  initLoad();
+
+  // Periodic refresh for static data
+  setInterval(async () => {
+    const r = await api('/api/all');
+    if (!r.error) {
+      DS.all = r;
+      DS.config = r.config || {};
+      DS.state = r.state || {};
+      // Only update non-SSE-driven data
+      renderHomeStats();
+      updateHeaderStats();
+      renderSettings();
+      const curTab = document.querySelector('.tab-btn.active');
+      if (curTab) {
+        const tab = curTab.dataset.tab;
+        if (tab === 'projects') renderProjects();
+        if (tab === 'models') renderModels();
+      }
+    }
+  }, 30000);
+});
 </script>
 </body>
 </html>
