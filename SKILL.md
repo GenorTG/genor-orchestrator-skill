@@ -318,6 +318,66 @@ The plugin slash command `/genor-git-commit` automates this:
 - Commits with auto-generated message
 - Tags and pushes
 
+### Auto-Commit on Session End
+When `workflow.auto_commit` is enabled in the project config, the plugin **automatically** commits and tags changes at the end of every session hook. No manual step needed.
+
+---
+
+## Workflow Enforcement Engine
+
+The plugin includes an optional 6-phase workflow enforcement engine:
+
+```
+Analyze → Plan → Document → Work → Log → Finish
+```
+
+### How It Works
+1. **Configure** per-project in `dashboard-config.json`:
+   ```json
+   {
+     "projects": {
+       "my-project": {
+         "location": "/path/to/project",
+         "workflow": {
+           "enabled": true,
+           "include_qa": true,
+           "auto_commit": true,
+           "qa_retries": 3,
+           "skip_phases": []
+         }
+       }
+     }
+   }
+   ```
+2. **Set context** with `orchestrator_set_context` — workflow auto-initializes
+3. **Advance phases** with `orchestrator_advance_phase` — blocks backward transitions
+4. **Complete** — auto-commit fires on `session_end` if enabled
+
+### 6 Phases
+| Phase | Purpose | Tool/Mechanism |
+|-------|---------|---------------|
+| **Analyze** | Read codebase, understand requirements | `read`, `exec find`, memory search |
+| **Plan** | Design solution, choose approach | `update_plan`, `sessions_spawn` |
+| **Document** | Write ADRs, update CONTEXT/STATE | `orchestrator_log_decision` |
+| **Work** | Implement the change | Code edits, builds, tests |
+| **Log** | Record session, decisions, outcomes | `orchestrator_log_session` |
+| **Finish** | Wrap up, summary, QA trigger | Auto-handled by plugin |
+
+### Phase Advancement
+```typescript
+orchestrator_advance_phase({ phase: "plan" })  // jump to specific phase (must be forward)
+orchestrator_advance_phase({})                    // auto-advance to next phase
+orchestrator_advance_phase({ skip: true })        // skip current phase
+```
+
+### QA Loop (Coming in v0.6.0)
+When `include_qa: true`:
+1. After `Finisn`, plugin auto-spawns a QA subagent
+2. QA runs tests, checks code, lints docs
+3. If QA fails → phase resets to "work" for fixes
+4. Max retries: `qa_retries` (default 3)
+5. After QA passes → auto-commit fires
+
 ### Manual Git Commands
 When auto-commit isn't desired (e.g. during active development), use:
 ```bash
