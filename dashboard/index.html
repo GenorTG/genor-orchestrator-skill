@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>⚡ Orchestrator — Live Agent Console</title>
+<title>⚡ GenorBoard — Live Agent Console</title>
 <style>
 /* ═══════════════════════════════════════════════════════════════
    ROOT — Terminal aesthetic, GitHub Dark palette, JetBrains Mono
@@ -33,7 +33,7 @@ html,body{height:100%}
 body{
   background:var(--bg);color:var(--text);font-family:var(--font);
   font-size:13px;line-height:1.5;display:flex;flex-direction:column;
-  min-width:1280px;overflow:hidden
+  overflow:hidden
 }
 /* Smooth scrollbar */
 ::-webkit-scrollbar{width:6px;height:6px}
@@ -213,12 +213,30 @@ body{
 .proj-detail .tabs-secondary{display:flex;gap:0;border-bottom:1px solid var(--border);flex-shrink:0}
 .proj-detail .tabs-secondary .stab{padding:5px 14px;font-size:11px;cursor:pointer;color:var(--text-dim);border-bottom:2px solid transparent;font-family:var(--font)}
 .proj-detail .tabs-secondary .stab.active{color:var(--text-bright);border-bottom-color:var(--blue)}
-.proj-detail .doc-area{flex:1;display:none;margin-top:10px;min-height:0}
+.proj-detail .doc-area{flex:1;display:none;margin-top:6px;min-height:0;max-height:60vh}
 .proj-detail .doc-area.show{display:flex;flex-direction:column}
-.proj-detail .doc-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-shrink:0}
-.proj-detail .doc-toolbar .doc-name{font-size:11px;color:var(--text-dim)}
-.proj-detail .doc-toolbar .doc-actions{display:flex;gap:4px}
-.proj-detail textarea.doc-editor{flex:1;min-height:200px;resize:vertical;overflow:auto;white-space:pre;font-size:11px}
+.proj-detail .doc-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;flex-shrink:0}
+.proj-detail .doc-toolbar .doc-name{font-size:10px;color:var(--text-dim);letter-spacing:0.3px}
+.proj-detail .doc-toolbar .doc-actions{display:flex;gap:3px}
+.proj-detail .doc-viewer{flex:1;overflow:auto;background:var(--bg);border:1px solid var(--border);border-radius:3px;padding:8px 10px;font-size:11px;line-height:1.5;white-space:pre-wrap;word-break:break-word;color:var(--text);min-height:80px;max-height:55vh;font-family:inherit}
+.proj-detail .doc-viewer h1,.proj-detail .doc-viewer h2{color:var(--green);font-size:13px;margin:8px 0 4px;padding-bottom:2px;border-bottom:1px solid var(--border)}
+.proj-detail .doc-viewer h3{color:var(--cyan);font-size:12px;margin:6px 0 3px}
+.proj-detail .doc-viewer code{background:var(--bg-dim);padding:1px 4px;border-radius:2px;font-size:10px;color:var(--yellow)}
+.proj-detail .doc-viewer pre{background:var(--bg-dim);border:1px solid var(--border);border-radius:3px;padding:6px 8px;overflow-x:auto;font-size:10px}
+.proj-detail .doc-viewer pre code{background:none;padding:0;color:var(--text)}
+.proj-detail .doc-viewer table{border-collapse:collapse;width:100%;font-size:10px;margin:4px 0}
+.proj-detail .doc-viewer th,.proj-detail .doc-viewer td{border:1px solid var(--border);padding:3px 6px;text-align:left}
+.proj-detail .doc-viewer th{background:var(--bg-dim);color:var(--cyan);font-weight:600}
+.proj-detail .doc-viewer td{color:var(--text)}
+.proj-detail .doc-viewer strong{color:var(--text-bright)}
+.proj-detail .doc-viewer em{color:var(--text-dim)}
+.proj-detail .doc-viewer ul,.proj-detail .doc-viewer ol{padding-left:16px;margin:3px 0}
+.proj-detail .doc-viewer li{margin:1px 0}
+.proj-detail .doc-viewer hr{border:none;border-top:1px solid var(--border);margin:8px 0}
+.proj-detail .doc-viewer blockquote{border-left:2px solid var(--cyan);padding-left:8px;margin:4px 0;color:var(--text-dim)}
+.proj-detail .doc-viewer a{color:var(--cyan);text-decoration:none}
+.proj-detail .doc-viewer a:hover{text-decoration:underline}
+.proj-detail textarea.doc-editor{flex:1;min-height:80px;max-height:55vh;resize:vertical;overflow:auto;white-space:pre;font-size:11px;font-family:monospace;line-height:1.4;background:var(--bg);color:var(--text);border:1px solid var(--border);padding:8px 10px;border-radius:3px}
 .proj-detail .proj-sessions{overflow-y:auto}
 .proj-detail table{width:100%;border-collapse:collapse;font-size:11px}
 .proj-detail th{text-align:left;padding:4px 6px;color:var(--text-dim);border-bottom:1px solid var(--border);font-weight:500;position:sticky;top:0;background:var(--bg);z-index:1}
@@ -353,6 +371,22 @@ body{
 .btn-success{background:var(--green);border-color:var(--green);color:#000}
 .btn-success:hover{opacity:.85}
 .btn-danger{background:transparent;border-color:var(--red);color:var(--red)}
+
+/* ═══════════════════════════════════════════════════════════════
+   CHAT — message bubbles
+   ═══════════════════════════════════════════════════════════════ */
+.msg-row{display:flex;gap:4px;margin-bottom:4px;animation:fadeIn .15s ease}
+.msg-row.user{justify-content:flex-end}
+.msg-bubble{max-width:85%;padding:6px 10px;border-radius:8px;font-size:12px;line-height:1.5;word-break:break-word;white-space:pre-wrap}
+.msg-bubble.user{background:var(--blue);color:#000;border-bottom-right-radius:2px}
+.msg-bubble.assistant{background:var(--bg-alt);color:var(--text);border:1px solid var(--border);border-bottom-left-radius:2px}
+.msg-bubble.system{background:rgba(210,153,34,.12);color:var(--yellow);border:1px solid rgba(210,153,34,.2);font-size:11px;font-style:italic}
+.msg-ts{font-size:9px;color:var(--text-dim);opacity:.5;margin-top:2px}
+.msg-bubble.user .msg-ts{text-align:right}
+.msg-bubble.assistant .msg-ts{text-align:left}
+.msg-content p{margin:0}
+.msg-content code{background:rgba(0,0,0,.2);padding:1px 4px;border-radius:3px;font-size:10px}
+.msg-content pre{background:rgba(0,0,0,.3);padding:6px;border-radius:4px;overflow-x:auto;font-size:10px;margin:4px 0}
 .btn-danger:hover{background:rgba(248,81,73,.12)}
 .btn-warning{background:var(--yellow);border-color:var(--yellow);color:#000}
 .btn-warning:hover{opacity:.85}
@@ -360,6 +394,38 @@ body{
 input.search{background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:3px;padding:3px 8px;font-size:11px;font-family:var(--font);width:200px}
 input.search::placeholder{color:var(--text-dim);opacity:.5}
 input.search:focus{border-color:var(--blue);outline:none}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE — mobile/touch friendly
+   ═══════════════════════════════════════════════════════════════ */
+@media(max-width:768px){
+  body{font-size:12px;overflow:auto}
+  .term-header{padding:4px 8px;gap:6px;flex-wrap:wrap}
+  .term-header .stats{display:none}
+  .term-header .logo{font-size:12px}
+  .stat-cards{grid-template-columns:1fr 1fr!important}
+  .agent-grid{grid-template-columns:1fr!important}
+  .modal-content{width:95vw!important;max-height:90vh!important;margin:5vh auto!important}
+  .proj-grid{grid-template-columns:1fr!important}
+  .model-grid{grid-template-columns:1fr!important}
+  .sidebar{display:none}
+  .content{margin-left:0!important;padding:8px}
+  .tab-bar{overflow-x:auto;gap:4px}
+  .tab-bar button{padding:6px 10px;font-size:11px;white-space:nowrap}
+  .agent-card .info .row{flex-wrap:wrap}
+  .agent-card .info .row .value{word-break:break-all}
+  #agentSearch{width:100px!important}
+  input.search{font-size:11px;padding:4px 8px}
+  .modal-form .row{flex-direction:column;align-items:flex-start;gap:2px}
+  .modal-form .row .val{padding-left:0}
+}
+@media(max-width:480px){
+  .term-header .status-text{display:none}
+  .term-header .sep{display:none}
+  .stat-cards{grid-template-columns:1fr!important}
+  .dashboard-header > div{flex-direction:column;gap:4px}
+  .agent-card .top{flex-direction:column;align-items:flex-start;gap:4px}
+}
 </style>
 </head>
 <body>
@@ -388,11 +454,13 @@ input.search:focus{border-color:var(--blue);outline:none}
 <!-- ═══════════════════ TAB BAR ═══════════════════ -->
 <div class="tab-bar" id="tabBar">
   <button class="tab-btn active" data-tab="home">⌂ Home <span class="count" id="tbActivity">live</span></button>
-  <button class="tab-btn" data-tab="agents">■ Agents <span class="count" id="tbAgents">0</span></button>
   <button class="tab-btn" data-tab="projects">◆ Projects <span class="count" id="tbProjects">0</span></button>
   <button class="tab-btn" data-tab="models">⬡ Models <span class="count" id="tbModels">0</span></button>
-  <button class="tab-btn" data-tab="logs">≡ Logs</button>
+  <button class="tab-btn" data-tab="gateway">🔌 Gateway <span class="count" id="tbGateway">0</span></button>
+  <button class="tab-btn" data-tab="chat">💬 Chat</button>
+  <button class="tab-btn" data-tab="logs">📋 Logs</button>
   <button class="tab-btn" data-tab="settings">⚙ Settings</button>
+  <span class="project-badge" id="projBadge" style="display:none;margin-left:auto;padding:2px 10px;font-size:10px;color:var(--cyan);background:rgba(88,166,255,.1);border-radius:10px"></span>
 </div>
 
 <!-- ═══════════════════ MAIN CONTENT ═══════════════════ -->
@@ -405,7 +473,7 @@ input.search:focus{border-color:var(--blue);outline:none}
       <div class="term-card"><div class="card-label">Agents Active</div><div class="card-value g" id="hcAgents">0</div><div class="card-sub">currently working</div></div>
       <div class="term-card"><div class="card-label">Models Online</div><div class="card-value b" id="hcModels">—</div><div class="card-sub">agent-ready</div></div>
       <div class="term-card"><div class="card-label">Projects</div><div class="card-value" id="hcProjects">—</div><div class="card-sub">registered</div></div>
-      <div class="term-card"><div class="card-label">Sessions Logged</div><div class="card-value" id="hcSessions">—</div><div class="card-sub">all time</div></div>
+      <div class="term-card"><div class="card-label">Gateway Sessions</div><div class="card-value" id="hcSessions">—</div><div class="card-sub">on gateway</div></div>
     </div>
     <div class="activity-feed-wrap">
       <div class="activity-feed-header">
@@ -429,15 +497,18 @@ input.search:focus{border-color:var(--blue);outline:none}
   </div>
 </div>
 
-<!-- ─── AGENTS ─── -->
-<div class="tab-pane" id="pane-agents">
+<!-- ─── GATEWAY: live sessions from bridge ─── -->
+<div class="tab-pane" id="pane-gateway">
   <div style="margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
-    <div class="title" style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim)">Agent Sessions</div>
-    <div style="display:flex;gap:6px;align-items:center">
-      <input class="search" id="agentSearch" placeholder="Search agents..." oninput="renderAgents()">
+    <div class="title" style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim)">Gateway Sessions <span class="gateway-pulse" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);margin-left:4px;vertical-align:middle"></span></div>
+    <div style="display:flex;gap:6px">
+      <input class="search" id="gatewaySearch" placeholder="Search sessions..." oninput="renderGateway()">
+      <button class="btn btn-sm" onclick="loadGateway()">↻ Refresh</button>
     </div>
   </div>
-  <div class="agent-grid" id="agentGrid"></div>
+  <div id="gatewayList" style="font-size:12px">
+    <div style="text-align:center;padding:40px;color:var(--text-dim)">Loading gateway sessions…</div>
+  </div>
 </div>
 
 <!-- ─── PROJECTS ─── -->
@@ -463,7 +534,7 @@ input.search:focus{border-color:var(--blue);outline:none}
       <span class="stab" data-stab="roadmap" onclick="switchProjTab('roadmap')">🗺 ROADMAP</span>
       <span class="stab" data-stab="context" onclick="switchProjTab('context')">📖 CONTEXT</span>
       <span class="stab" data-stab="notes" onclick="switchProjTab('notes')">📝 NOTES</span>
-      <span class="stab" data-stab="sessions" onclick="switchProjTab('sessions')">⚡ SESSIONS</span>
+      <span class="stab" data-stab="sessions" onclick="switchProjTab('sessions')">📝 Session Log</span>
       <span class="stab" data-stab="files" onclick="switchProjTab('files')">📁 FILES</span>
       <span class="stab" data-stab="manager" onclick="switchProjTab('manager')">🤖 MANAGER</span>
     </div>
@@ -476,10 +547,11 @@ input.search:focus{border-color:var(--blue);outline:none}
           <button class="btn btn-sm" id="docCancelBtn" style="display:none" onclick="docCancelEdit()">Cancel</button>
         </div>
       </div>
-      <textarea class="doc-editor inp" id="docEditor" style="display:block" disabled></textarea>
+      <div class="doc-viewer" id="docViewer"></div>
+      <textarea class="doc-editor inp" id="docEditor" style="display:none"></textarea>
     </div>
     <div class="doc-area" id="projSessionsArea">
-      <div class="proj-sessions"><table><thead><tr><th>Date</th><th>Task</th><th>Model</th><th>Agent</th><th>Duration</th><th>Status</th></tr></thead><tbody id="projSessBody"></tbody></table></div>
+      <div class="proj-sessions"><table><thead><tr><th>Date</th><th>Goal / Task</th><th>Session</th><th>Model</th><th>Agent</th><th>Duration</th><th>Status</th><th style="width:40px">Act</th></tr></thead><tbody id="projSessBody"></tbody></table></div>
     </div>
     <div class="doc-area" id="projFilesArea">
       <div style="display:flex;gap:6px;margin-bottom:8px">
@@ -522,12 +594,52 @@ input.search:focus{border-color:var(--blue);outline:none}
   </div>
 </div>
 
+<!-- ─── CHAT ─── -->
+<div class="tab-pane" id="pane-chat">
+  <div style="display:flex;flex-direction:column;flex:1;height:100%">
+    <!-- Session Selector -->
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-shrink:0">
+      <span style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim)">Session:</span>
+      <select id="chatSessionSelect" style="flex:1;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-size:12px;font-family:var(--font);cursor:pointer" onchange="switchChatSession()">
+        <option value="">— Select a session —</option>
+      </select>
+      <button class="btn btn-sm" onclick="refreshChatSessions()">↻</button>
+    </div>
+
+    <!-- Model Info Bar -->
+    <div id="chatInfo" style="display:none;padding:4px 8px;background:var(--bg-alt);border:1px solid var(--border);border-radius:4px;font-size:10px;color:var(--text-dim);margin-bottom:8px;flex-shrink:0"></div>
+
+    <!-- Message List -->
+    <div id="chatMessages" style="flex:1;overflow-y:auto;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px;font-size:12px;line-height:1.5;min-height:100px" onclick="document.getElementById('chatInput').focus()">
+      <div style="text-align:center;padding:40px;color:var(--text-dim)">Select a session to view its conversation</div>
+    </div>
+
+    <!-- Input Area -->
+    <div style="display:flex;gap:6px;padding:8px 0 0;flex-shrink:0">
+      <textarea id="chatInput" placeholder="Type a message... (Enter to send, Shift+Enter for newline)"
+        style="flex:1;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:6px 10px;font-size:12px;font-family:var(--font);resize:none;min-height:36px;max-height:80px"
+        onkeydown="chatHandleKey(event)"></textarea>
+      <button class="btn btn-primary" onclick="chatSend()" id="chatSendBtn" style="padding:4px 16px;font-size:12px" disabled>Send</button>
+    </div>
+    <div id="chatStatus" style="font-size:9px;color:var(--text-dim);padding:2px 4px;flex-shrink:0"></div>
+  </div>
+</div>
+
+<!-- ─── OLD SESSIONS TAB REMOVED — replaced by Gateway ─── -->
+<div class="tab-pane" id="pane-sessions" style="display:none"></div>
+
 <!-- ─── LOGS ─── -->
 <div class="tab-pane" id="pane-logs">
   <div class="logs-wrap">
     <div class="logs-toolbar">
       <label>Level:</label><select id="logLevel"><option value="">All</option><option value="info">info</option><option value="warn">warn</option><option value="error">error</option><option value="success">success</option><option value="debug">debug</option></select>
-      <label>Source:</label><select id="logSource"><option value="">All</option></select>
+      <label>Source:</label><select id="logSource" onchange="loadLogs()"><option value="">All</option></select>
+      <span style="margin-left:8px;font-size:10px;color:var(--text-dim)">Quick:</span>
+      <button class="btn btn-xs" onclick="filterLog('session')">📝 Sessions</button>
+      <button class="btn btn-xs" onclick="filterLog('context')">📋 Context</button>
+      <button class="btn btn-xs" onclick="filterLog('live-agents')">🤖 Agents</button>
+      <button class="btn btn-xs" onclick="filterLog('maintenance')">⚙ System</button>
+      <button class="btn btn-xs" onclick="filterLog('')">All</button>
       <label style="margin-left:auto"><input type="checkbox" id="logAutoScroll" checked> Auto-scroll</label>
       <button class="btn btn-sm" onclick="loadLogs()">↻ Refresh</button>
     </div>
@@ -625,60 +737,110 @@ function toast(msg, type='info') {
 let evtSource = null;
 
 function connectSSE() {
-  if (evtSource) { evtSource.close(); }
+  // Poll live-agents.json instead of SSE (Python http.server is single-threaded)
+  pollLiveAgents();
+  // Poll agents every 10s (was 3s — reduced noise)
+  setInterval(pollLiveAgents, 10000);
+}
 
-  evtSource = new EventSource(BASE + '/api/activity/stream');
-  evtSource.onopen = () => {
-    $('sseStatus').textContent = 'connected';
+async function pollLiveAgents() {
+  try {
+    const resp = await fetch(BASE + '/api/live-agents');
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    $('sseStatus').textContent = 'polling';
     $('sseStatus').style.color = 'var(--green)';
     $('disconnected').classList.remove('show');
     SSE_RETRIES = 0;
-  };
-
-  evtSource.addEventListener('activity', (e) => {
-    try {
-      const data = JSON.parse(e.data);
-      if (data.events && data.events.length) {
-        DS.activity = [...data.events, ...DS.activity].slice(0, 500);
-        renderActivityFeed();
-      }
-    } catch(err) { /* skip malformed */ }
-  });
-
-  evtSource.addEventListener('state', (e) => {
-    try {
-      const data = JSON.parse(e.data);
-      DS.state = data;
-      updateStatusBar();
-      updateHeaderStats();
-    } catch(err) { /* skip */ }
-  });
-
-  evtSource.addEventListener('agents', (e) => {
-    try {
-      const data = JSON.parse(e.data);
-      if (data.agents) { DS.agents = data.agents; renderAgents(); updateHeaderStats(); }
-    } catch(err) { /* skip */ }
-  });
-
-  evtSource.addEventListener('heartbeat', (e) => {
-    try {
-      const data = JSON.parse(e.data);
-      $('sbTime').textContent = fmtTime(data.ts);
-    } catch(err) { /* skip */ }
-  });
-
-  evtSource.onerror = () => {
-    $('sseStatus').textContent = 'reconnecting';
-    $('sseStatus').style.color = 'var(--yellow)';
+    if (data.agents) {
+      if (typeof updateHeaderStats === 'function') updateHeaderStats();
+    }
+    if (data.active_count !== undefined) {
+      $('sAgents').textContent = data.active_count + '/' + data.agent_count;
+    }
+    // Simulate activity event from the live-agents data
+    const ev = [{
+      ts: data.last_updated || new Date().toISOString(),
+      reason: data.reason || 'poll',
+      agents: data.agents || [],
+      agent_count: data.agent_count || 0,
+      active_count: data.active_count || 0,
+    }];
+    DS.activity = [...ev, ...(DS.activity || [])].slice(0, 500);
+    if (typeof renderActivityFeed === 'function') renderActivityFeed();
+  } catch(err) {
+    $('sseStatus').textContent = 'offline';
+    $('sseStatus').style.color = 'var(--red)';
     $('disconnected').classList.add('show');
-    SSE_RETRIES++;
-    evtSource.close();
-    setTimeout(connectSSE, Math.min(2000 * SSE_RETRIES, 10000));
-  };
+  }
 }
 
 /* ── Initial Load ── */
+/* ═══════════════════════════════════════════════════════════════
+   GATEWAY TAB — live session list from bridge
+   ═══════════════════════════════════════════════════════════════ */
+const GATEWAY = { sessions: [], filtered: [] };
+
+async function loadGateway() {
+  const el = $('gatewayList');
+  try {
+    const r = await fetch('/api/sessions');
+    const data = await r.json();
+    const sessions = data.sessions || [];
+    
+    GATEWAY.sessions = sessions;
+    renderGateway();
+    
+    $('tbGateway').textContent = sessions.length;
+  } catch(e) {
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--red)">Error: ' + esc(e.message) + '</div>';
+  }
+}
+
+function renderGateway() {
+  const el = $('gatewayList');
+  const q = (($('gatewaySearch')||{}).value||'').toLowerCase();
+  let sessions = GATEWAY.sessions;
+  
+  if (q) sessions = sessions.filter(s => 
+    (s.displayName||'').toLowerCase().includes(q) ||
+    (s.key||'').toLowerCase().includes(q) ||
+    (s.model||'').toLowerCase().includes(q) ||
+    (s.status||'').toLowerCase().includes(q)
+  );
+  
+  GATEWAY.filtered = sessions;
+  
+  if (!sessions.length) {
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-dim)">' +
+      (q ? 'No sessions match "' + esc(q) + '".' : 'No gateway sessions found.') +
+      '</div>';
+    return;
+  }
+  
+  let html = '<div class="title" style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--cyan);margin-bottom:8px">🔌 ' + sessions.length + ' session(s) on gateway</div>';
+  
+  for (const s of sessions) {
+    const name = s.displayName || s.key || '?';
+    const model = s.model || '—';
+    const status = s.status || 'unknown';
+    const stCls = status === 'idle' ? 'var(--text-dim)' : status === 'working' || status === 'prompting' ? 'var(--green)' : 'var(--yellow)';
+    const msgs = (s.messages || []).length;
+    // Full key, no truncation
+    const agentKey = (s.key||'').replace(/^agent:/, '');
+    
+    html += '<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:7px 10px;background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius);font-size:11px">' +
+      '<span style="color:var(--text-bright);font-weight:600">' + esc(name) + '</span>' +
+      '<span style="color:var(--text-dim);font-size:9px;word-break:break-all">' + esc(agentKey) + '</span>' +
+      '<span style="margin-left:auto;display:flex;gap:6px;align-items:center;flex-shrink:0">' +
+      '<span style="color:var(--blue);font-size:10px">' + esc(model) + '</span>' +
+      '<span style="color:' + stCls + ';font-size:10px">● ' + esc(status) + '</span>' +
+      '<span style="color:var(--text-dim);font-size:9px">' + msgs + ' msgs</span>' +
+      '</span></div>';
+  }
+  el.innerHTML = html;
+}
+
 async function initLoad() {
   const r = await api('/api/all');
   if (r.error) {
@@ -689,14 +851,12 @@ async function initLoad() {
   DS.all = r;
   DS.config = r.config || {};
   DS.state = r.state || {};
-  DS.agents = r.agents || [];
   DS.activity = (r.logs && r.logs.logs) ? r.logs.logs.reverse().slice(-200) : [];
 
   updateStatusBar();
   updateHeaderStats();
   renderHomeStats();
   renderActivityFeed();
-  renderAgents();
   renderProjects();
   renderModels();
   renderSettings();
@@ -723,20 +883,25 @@ function updateStatusBar() {
 
 function updateHeaderStats() {
   const agents = DS.agents || [];
-  const active = agents.filter(a => a.status === 'active').length;
+  const working = agents.filter(a => {
+    const s = a.agent_status || a.status || '';
+    return s === 'active' || s === 'working' || s === 'resolving';
+  }).length;
   $('sAgents').textContent = agents.length;
-  $('sActive').textContent = active;
-  $('hcAgents').textContent = active;
+  $('sActive').textContent = working;
+  $('hcAgents').textContent = working;
   if (DS.all) {
     const m = DS.all.models || {};
     const p = DS.all.projects || {};
-    const s = DS.all.sessions || {};
+    const s = DS.all.sessions || [];
+    const sessCount = Array.isArray(s) ? s.length : (s.count || 0);
+    const projCount = p.projects ? p.projects.length : (p.count || 0);
     $('sModels').textContent = m.total || 0;
-    $('sProjects').textContent = p.count || 0;
-    $('sSessions').textContent = s.count || 0;
+    $('sProjects').textContent = projCount;
+    $('sSessions').textContent = sessCount;
     $('hcModels').textContent = m.active || 0;
-    $('hcProjects').textContent = p.count || 0;
-    $('hcSessions').textContent = s.count || 0;
+    $('hcProjects').textContent = projCount;
+    $('hcSessions').textContent = sessCount;
   }
 }
 
@@ -756,6 +921,8 @@ document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
     const pane = $('pane-' + tab);
     if (pane) pane.classList.add('active');
     if (tab === 'logs') loadLogs();
+    if (tab === 'gateway') loadGateway();
+    if (tab === 'chat') chatTabActivated();
   });
 });
 
@@ -806,6 +973,19 @@ $('feedAutoScroll').addEventListener('change', () => {
 /* ═══════════════════════════════════════════════════════════════
    AGENTS TAB
    ═══════════════════════════════════════════════════════════════ */
+function agentStatusClass(s) {
+  if (!s || s === 'working' || s === 'active') return 'active';
+  if (s === 'blocked' || s === 'error') return 'failed';
+  if (s === 'complete' || s === 'done') return 'done';
+  if (s === 'idle') return 'blocked';
+  return 'active';
+}
+
+function agentStatusLabel(s) {
+  if (!s) return 'active';
+  return s;
+}
+
 function renderAgents() {
   const grid = $('agentGrid');
   const agents = DS.agents || [];
@@ -817,11 +997,17 @@ function renderAgents() {
   }
 
   let filtered = agents;
-  if (q) filtered = agents.filter(a => (a.name||'').toLowerCase().includes(q) || (a.task||'').toLowerCase().includes(q));
+  if (q) filtered = agents.filter(a => (a.agent||a.name||'').toLowerCase().includes(q) || (a.task||'').toLowerCase().includes(q) || (a.project||'').toLowerCase().includes(q));
 
   let html = '';
   for (const a of filtered) {
+    const agentName = a.agent || a.name || 'Agent';
     const depth = a.subagent_depth || 0;
+    const status = a.agent_status || a.status || 'active';
+    const stCls = agentStatusClass(status);
+    const stLbl = agentStatusLabel(status);
+    const elapsed = a.elapsed || timeAgo(a.session_started_at) || (a.uptime_ms ? Math.round(a.uptime_ms/1000)+'s' : '—');
+
     let depthHtml = '';
     if (depth > 0) {
       const segs = [];
@@ -831,16 +1017,28 @@ function renderAgents() {
       }
       depthHtml = '<div class="depth-bar">' + segs.join('') + '</div>';
     }
-    html += '<div class="agent-card" onclick="openAgentModal(\'' + esc(a.name||'') + '\')">' +
-      '<div class="top"><span class="name">' + esc(a.name||'Agent') + '</span>' +
-      '<span class="status-badge ' + (a.status||'active') + '">' + esc(a.status||'active') + '</span></div>' +
+
+    // Badge for model tier if available
+    const modelBadge = a.model_tier ? ' <span class="tier-badge t' + a.model_tier + '">T' + a.model_tier + '</span>' : '';
+
+    html += '<div class="agent-card">' +
+      '<div class="top" onclick="openAgentModal(\'' + esc(agentName) + '\')" style="cursor:pointer"><span class="name">' + esc(agentName) + '</span>' +
+      '<span class="status-badge ' + stCls + '">' + esc(stLbl) + '</span></div>' +
       (a.project ? '<div class="project-name">' + esc(a.project) + '</div>' : '') +
       '<div class="info">' +
-      '<div class="row"><span class="label">Model</span><span class="value">' + esc(a.model||'—') + '</span></div>' +
+      '<div class="row"><span class="label">Model</span><span class="value">' + esc(a.model||'—') + modelBadge + '</span></div>' +
       '<div class="row"><span class="label">Task</span><span class="value">' + esc((a.task||'').slice(0,60)) + '</span></div>' +
-      '<div class="row"><span class="label">Depth</span><span class="value">' + depth + ' sub-agents</span></div>' +
-      (a.last_seen ? '<div class="row"><span class="label">Seen</span><span class="value">' + timeAgo(a.last_seen) + '</span></div>' : '') +
-      '</div>' + depthHtml + '</div>';
+      '<div class="row"><span class="label">Action</span><span class="value">' + esc((a.action||'').slice(0,50)) + '</span></div>' +
+      (a.current_file ? '<div class="row"><span class="label">File</span><span class="value" style="font-size:10px;font-family:var(--font);color:var(--yellow)">' + esc(a.current_file) + '</span></div>' : '') +
+      '<div class="row"><span class="label">Elapsed</span><span class="value">' + esc(elapsed) + '</span></div>' +
+      (depth > 0 ? '<div class="row"><span class="label">Depth</span><span class="value">' + depth + '</span></div>' : '') +
+      (a.last_error ? '<div class="row"><span class="label" style="color:var(--red)">Error</span><span class="value" style="color:var(--red)">' + esc(a.last_error.slice(0,80)) + '</span></div>' : '') +
+      '</div>' +
+      '<div style="padding:4px 8px 6px;display:flex;gap:4px">' +
+      '<button class="btn btn-xs" onclick="event.stopPropagation();openAgentModal(\'' + esc(agentName) + '\')" style="flex:1">📋 Details</button>' +
+
+      '</div>' +
+      depthHtml + '</div>';
   }
   grid.innerHTML = html || '<div class="agent-empty"><span class="big">🔍</span>No agents match search.</div>';
   $('tbAgents').textContent = filtered.length;
@@ -868,10 +1066,13 @@ function renderProjects() {
     const lastDate = lastSess ? (lastSess.logged_at || lastSess.date || '') : '';
     const allowlist = p.allowlist_count||0;
     const freeOnly = p.free_only||false;
+    const liveCt = p.live_count||0;
     html += '<div class="proj-card" onclick="openProjDetail(\'' + esc(p.name) + '\')">' +
-      '<div class="top"><span class="proj-name">📁 ' + esc(p.name) + '</span></div>' +
+      '<div class="top"><span class="proj-name">📁 ' + esc(p.name) + '</span>' +
+      (liveCt ? '<span style="font-size:9px;color:var(--green)">● ' + liveCt + ' active</span>' : '') +
+      '</div>' +
       '<div class="proj-meta">' +
-      '<span>' + (p.session_count||0) + ' sessions</span>' +
+      '<span>' + (p.session_count||0) + ' sessions logged</span>' +
       '<span>' + (p.task_count||0) + ' tasks</span>' +
       (lastDate ? '<span>Last: ' + esc(lastDate) + '</span>' : '') +
       '</div>' +
@@ -893,6 +1094,10 @@ async function openProjDetail(name) {
   const detail = $('projDetail');
   detail.classList.add('show');
   $('pdTitle').textContent = name;
+  // Show project badge in header
+  const badge = $('projBadge');
+  badge.style.display = 'inline-block';
+  badge.textContent = '🔵 Working on: ' + name;
 
   const r = await api('/api/project-state?name=' + encodeURIComponent(name));
   if (r.error) { toast('Error: ' + r.error, 'error'); return; }
@@ -907,6 +1112,8 @@ function closeProjDetail() {
   CUR_PROJ = null;
   $('projListView').style.display = 'block';
   $('projDetail').classList.remove('show');
+  // Hide project badge
+  $('projBadge').style.display = 'none';
 }
 
 function switchProjTab(tab) {
@@ -934,7 +1141,13 @@ function renderProjDocTab() {
   $('docFileName').textContent = fn;
   DOC_ORIG = cmap[CUR_DOC_TAB] || '';
   DOC_EDITING = false;
+  // Render markdown to HTML for the viewer
+  const viewer = $('docViewer');
+  viewer.style.display = 'block';
+  viewer.innerHTML = renderMarkdown(DOC_ORIG);
+  // Hide editor in view mode
   const ed = $('docEditor');
+  ed.style.display = 'none';
   ed.value = DOC_ORIG;
   ed.disabled = true;
   $('docEditBtn').style.display = 'inline-block';
@@ -942,11 +1155,57 @@ function renderProjDocTab() {
   $('docCancelBtn').style.display = 'none';
 }
 
+function renderMarkdown(md) {
+  if (!md) return '<div style="color:var(--text-dim);padding:10px;font-size:11px">(empty)</div>';
+  let h = md
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    // Headers
+    .replace(/^#### (.+)$/gm, '<h4>$1</h4>')
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+    // Bold & italic
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    // Inline code ``
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    // Code blocks ```...```
+    .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
+    // Tables
+    .replace(/^\|(.+)\|$/gm, function(m) {
+      if (/^\|[-\s:]+\|$/.test(m)) return '<hr class="tbl-sep">';
+      const cells = m.split('|').filter(c=>c.trim()).map(c=>c.trim());
+      if (m.includes('|---')) return '';
+      if (!m.startsWith('| ---')) return '<tr><td>' + cells.join('</td><td>') + '</td></tr>';
+      return '';
+    })
+    // Table headers (detect if previous was a table header)
+    // Blockquotes
+    .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
+    // Horizontal rules
+    .replace(/^---$/gm, '<hr>')
+    // Unordered lists
+    .replace(/^\* (.+)$/gm, '<li>$1</li>')
+    .replace(/^- (.+)$/gm, '<li>$1</li>')
+    // Ordered lists
+    .replace(/^\d+\. (.+)$/gm, '<li>$1</li>')
+    // Links
+    .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank">$1</a>')
+    // Line breaks (double newline = paragraph)
+    .replace(/\n\n/g, '</p><p>')
+    // Single newlines within paragraphs
+    .replace(/\n/g, '<br>');
+  return '<p>' + h + '</p>';
+}
+
 function docToggleEdit() {
   DOC_EDITING = true;
+  const viewer = $('docViewer');
+  viewer.style.display = 'none';
   const ed = $('docEditor');
-  ed.disabled = false;
   ed.style.display = 'block';
+  ed.disabled = false;
+  ed.focus();
   $('docEditBtn').style.display = 'none';
   $('docSaveBtn').style.display = 'inline-block';
   $('docCancelBtn').style.display = 'inline-block';
@@ -955,8 +1214,11 @@ function docToggleEdit() {
 function docCancelEdit() {
   DOC_EDITING = false;
   const ed = $('docEditor');
+  ed.style.display = 'none';
   ed.value = DOC_ORIG;
   ed.disabled = true;
+  const viewer = $('docViewer');
+  viewer.style.display = 'block';
   $('docEditBtn').style.display = 'inline-block';
   $('docSaveBtn').style.display = 'none';
   $('docCancelBtn').style.display = 'none';
@@ -976,7 +1238,13 @@ async function docSave() {
     toast('Saved ' + fn, 'success');
     DOC_ORIG = content;
     DOC_EDITING = false;
-    $('docEditor').disabled = true;
+    // Switch back to viewer mode
+    const ed = $('docEditor');
+    ed.style.display = 'none';
+    ed.disabled = true;
+    const viewer = $('docViewer');
+    viewer.style.display = 'block';
+    viewer.innerHTML = renderMarkdown(content);
     $('docEditBtn').style.display = 'inline-block';
     $('docSaveBtn').style.display = 'none';
     $('docCancelBtn').style.display = 'none';
@@ -992,15 +1260,67 @@ async function docSave() {
 function renderProjSessions() {
   const s = DS.projectState;
   const body = $('projSessBody');
-  if (!s || !s.sessions || !s.sessions.length) {
-    body.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:16px;color:var(--text-dim)">No sessions.</td></tr>';
-    return;
-  }
+  if (!s) { body.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:16px;color:var(--text-dim)">Loading...</td></tr>'; return; }
+  
+  const matched = s.matched_live || [];
+  const logged = s.sessions || [];
+  
+  // Show matched LIVE sessions first (currently active on this project)
   let h = '';
-  for (const sess of s.sessions) {
-    h += '<tr><td>' + esc(sess.date||'') + '</td><td style="font-family:var(--font);font-size:10px">' + esc(sess.task||'') + '</td><td>' + esc(sess.model||'') + '</td><td>' + esc(sess.agent||'shell') + '</td><td>' + esc(sess.duration||'') + '</td><td>' + esc(sess.status||'') + '</td></tr>';
+  if (matched.length > 0) {
+    h += '<tr style="background:var(--bg-alt)"><td colspan="8" style="padding:6px 10px;font-size:10px;color:var(--green);text-align:center">\u25cf ' + matched.length + ' session(s) currently active on this project</td></tr>';
+    for (const ls of matched) {
+      const stCls = ls.status === 'idle' ? 'color:var(--text-dim)' : ls.status === 'prompting' || ls.status === 'working' ? 'color:var(--green)' : 'color:var(--yellow)';
+      const chatKey = esc((ls.key||'').replace('agent:','')); const chatFullKey = ls.key||'';
+      h += '<tr style="background:var(--bg)"><td style="white-space:nowrap">' + esc('live') + '</td>' +
+        '<td style="font-size:10px;color:var(--text-bright)">' + esc(ls.displayName||ls.key||'') + '</td>' +
+        '<td style="font-size:9px;color:var(--text-dim);word-break:break-all;max-width:160px">' + chatKey + '</td>' +
+        '<td style="font-size:10px">' + esc(ls.model||'') + '</td>' +
+        '<td style="color:var(--cyan)">' + esc(ls.displayName||'?') + '</td>' +
+        '<td>-</td>' +
+        '<td style="font-weight:600;' + stCls + '">\u25cf ' + esc(ls.status||'idle') + '</td>' +
+        '<td style="text-align:right;white-space:nowrap"><button class="btn btn-xs" onclick="selectChatSession(\'' + chatFullKey + '\')" title="Open in Chat">💬</button></td></tr>';
+    }
   }
-  body.innerHTML = h;
+  
+  // Show LOGGED sessions (historical)
+  if (logged.length > 0) {
+    if (matched.length > 0) {
+      h += '<tr><td colspan="8" style="padding:8px 10px 2px;font-size:10px;color:var(--text-dim)">\u2014\u2014 Past sessions \u2014\u2014</td></tr>';
+    }
+    for (const sess of logged) {
+      const stCls = sess.status === 'complete' ? 'color:var(--green)' : sess.status === 'failed' || sess.status === 'interrupted' ? 'color:var(--red)' : sess.status === 'running' ? 'color:var(--yellow)' : '';
+      const goalShort = (sess.goal || sess.task || '').slice(0, 60);
+      const sk = sess.session_key || '';
+      const skFull = sk ? sk.replace('agent:','') : '';
+      h += '<tr><td style="white-space:nowrap">' + esc(sess.date||'') + '</td>' +
+        '<td style="font-family:var(--font);font-size:10px;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + esc(sess.goal||sess.task||'') + '">' + esc(goalShort) + '</td>' +
+        '<td style="font-size:9px;color:var(--text-dim);word-break:break-all;max-width:160px">' + esc(skFull) + '</td>' +
+        '<td style="font-size:10px">' + esc(sess.model||'') + '</td>' +
+        '<td>' + esc(sess.agent||'system') + '</td>' +
+        '<td>' + esc(sess.duration||'-') + '</td>' +
+        '<td style="font-weight:600;' + stCls + '">' + esc(sess.status||'') + '</td>' +
+        '<td style="text-align:right;white-space:nowrap">' +
+        (sk ? '<button class="btn btn-xs" onclick="selectChatSession(\'' + sk + '\')" title="Open in Chat">💬</button>' : '') +
+        '</td></tr>';
+    }
+  }
+  
+  // Empty state with useful info
+  if (!logged.length && !matched.length) {
+    const gwCount = s.total_gateway || 33;
+    const hasAgents = s.agent_on_project;
+    if (hasAgents) {
+      body.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--cyan);font-size:11px">\u25cf An agent is working on this project now &middot; view in \u2764\ufe0f Home for details</td></tr>';
+    } else {
+      body.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;font-size:11px;color:var(--text-dim)">' +
+        'This project has no logged sessions yet. ' + gwCount + ' sessions on gateway — none currently matched to this project.<br>' +
+        'Use <code style="background:var(--bg-alt);padding:1px 4px;border-radius:2px">orchestrator_set_context(project="' + esc(CUR_PROJ) + '", task="...")</code> to start working and auto-log sessions here.' +
+        '</td></tr>';
+    }
+  } else {
+    body.innerHTML = h;
+  }
 }
 
 function renderProjFiles() {
@@ -1059,22 +1379,60 @@ async function projCreateFile() {
 function renderProjManager() {
   const s = DS.projectState;
   const tree = $('projAgentTree');
-  if (!s || !s.sessions || !s.sessions.length) {
-    tree.innerHTML = '<div style="color:var(--text-dim)">No sessions recorded. Start a task to see agents.</div>';
-    return;
+  if (!s) { tree.innerHTML = '<div style="color:var(--text-dim);padding:12px">Loading...</div>'; return; }
+  
+  const matched = s.matched_live || [];
+  const logged = s.sessions || [];
+  const agentActive = s.agent_on_project;
+  const agentsCt = s.agents_active || 0;
+  
+  let h = '<div style="margin-bottom:8px;color:var(--green);font-weight:600;font-size:12px">📁 ' + esc(CUR_PROJ) + '</div>';
+  
+  // Active agents section
+  if (matched.length > 0) {
+    h += '<div style="margin-bottom:8px">';
+    h += '<div style="font-size:10px;text-transform:uppercase;color:var(--green);margin-bottom:4px">\u25cf Currently Active</div>';
+    for (const ls of matched) {
+      const stCls = ls.status === 'idle' ? 'var(--text-dim)' : ls.status === 'prompting' || ls.status === 'working' ? 'var(--green)' : 'var(--yellow)';
+      h += '<div style="display:flex;gap:8px;align-items:center;padding:6px 10px;background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:4px;font-size:11px">';
+      h += '<span style="width:6px;height:6px;border-radius:50%;background:' + stCls + '"></span>';
+      h += '<span style="color:var(--text-bright);font-weight:600">' + esc(ls.displayName||ls.key||'?') + '</span>';
+      h += '<span style="color:var(--blue);font-size:10px">' + esc(ls.model||'') + '</span>';
+      h += '<span style="color:' + stCls + ';font-size:10px">' + esc(ls.status||'idle') + '</span>';
+      h += '<span style="color:var(--text-dim);font-size:9px">' + ls.messages + ' msgs</span>';
+      h += '</div>';
+    }
+    h += '</div>';
+  } else if (agentActive) {
+    h += '<div style="padding:8px 10px;background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;font-size:11px;color:var(--cyan)">';
+    h += '\u25cf ' + agentsCt + ' agent(s) working on this project via current session</div>';
   }
-  let h = '<div style="margin-bottom:4px;color:var(--green);font-weight:600">📁 ' + esc(CUR_PROJ) + '</div>';
-  const sessions = s.sessions;
-  for (let i = 0; i < Math.min(sessions.length, 30); i++) {
-    const s = sessions[i];
-    const icon = (s.status==='complete'||s.status==='done')?'✅':(s.status==='in_progress'||s.status==='active')?'🔄':'❌';
-    const indent = Math.min(i, 16);
-    h += '<div class="node" style="padding-left:' + (indent * 16) + 'px">' +
-      '<span class="icon">' + icon + '</span>' +
-      '<span>' + esc(s.task||'') + '</span>' +
-      ' <span style="color:var(--text-dim);font-size:10px">(' + esc(s.model||'') + ' | ' + esc(s.duration||'') + ')</span></div>';
+  
+  // Logged sessions timeline
+  if (logged.length > 0) {
+    h += '<div style="font-size:10px;text-transform:uppercase;color:var(--text-dim);margin-bottom:4px">Session Timeline</div>';
+    for (let i = 0; i < Math.min(logged.length, 40); i++) {
+      const l = logged[i];
+      const icon = l.status==='complete'||l.status==='done'?'✅' : l.status==='running'||l.status==='in_progress'?'\ud83d\udd04' : l.status==='failed'||l.status==='interrupted'?'\u274c' : '\u2753';
+      const indent = Math.min(i, 16);
+      h += '<div class="node" style="padding-left:' + (indent * 16) + 'px">' +
+        '<span class="icon">' + icon + '</span>' +
+        '<span>' + esc((l.goal||l.task||'').slice(0,50)) + '</span>' +
+        ' <span style="color:var(--text-dim);font-size:10px">(' + esc(l.agent||'') + ' | ' + esc(l.model||'') + ' | ' + esc(l.duration||'') + ')</span></div>';
+    }
+    if (logged.length > 40) {
+      h += '<div style="padding:4px 10px;color:var(--text-dim);font-size:10px">... and ' + (logged.length-40) + ' more</div>';
+    }
   }
-  if (sessions.length > 30) h += '<div class="node" style="padding-left:480px;color:var(--text-dim)">... and ' + (sessions.length-30) + ' more</div>';
+  
+  if (!matched.length && !logged.length) {
+    const gwCount = s.total_gateway || 33;
+    const msg = agentActive 
+      ? 'An agent is working on this project. Sessions will be logged automatically on completion.'
+      : 'No activity yet. Use <code>orchestrator_set_context(project="' + esc(CUR_PROJ) + '", task="...")</code> to link sessions. <span style="color:var(--text-dim)">' + gwCount + ' sessions on gateway — none matched to this project.</span>';
+    h += '<div style="color:var(--text-dim);padding:12px;font-size:11px">' + msg + '</div>';
+  }
+  
   tree.innerHTML = h;
 }
 
@@ -1447,6 +1805,11 @@ async function loadLogs() {
   }
 }
 
+function filterLog(src) {
+  $('logSource').value = src;
+  loadLogs();
+}
+
 $('logLevel').addEventListener('change', loadLogs);
 $('logSource').addEventListener('change', loadLogs);
 $('logAutoScroll').addEventListener('change', () => {
@@ -1495,19 +1858,83 @@ function closeModal() {
 
 function openAgentModal(name) {
   const agents = DS.agents || [];
-  const a = agents.find(x => x.name === name);
+  const a = agents.find(x => (x.agent || x.name) === name);
   if (!a) return toast('Agent not found', 'error');
-  let depthHtml = '';
-  if (a.subagent_depth > 0) depthHtml = '<div class="row" style="margin-top:8px"><label>Sub-agents</label><div class="val">' + a.subagent_depth + '</div></div>';
-  const h = '<div class="modal-header"><h2>' + esc(a.name||'Agent') + '</h2><button class="btn btn-sm" onclick="closeModal()">✕</button></div>' +
+
+  const agentName = a.agent || a.name || 'Agent';
+  const status = a.agent_status || a.status || 'active';
+  const stCls = agentStatusClass(status);
+  const stLbl = agentStatusLabel(status);
+  const elapsed = a.elapsed || (a.uptime_ms ? Math.round(a.uptime_ms/1000)+'s' : '—');
+  const files = a.touched_files || [];
+  const history = a.action_history || [];
+  const tokenUsage = a.token_usage || {};
+
+  let h = '<div class="modal-header"><h2>' + esc(agentName) + '</h2><button class="btn btn-sm" onclick="closeModal()">✕</button></div>' +
     '<div class="modal-form">' +
-    '<div class="row"><label>Status</label><div class="val"><span class="status-badge ' + (a.status||'active') + '">' + esc(a.status||'active') + '</span></div></div>' +
+    // Status & identification
+    '<div class="row"><label>Status</label><div class="val"><span class="status-badge ' + stCls + '">' + esc(stLbl) + '</span></div></div>' +
     '<div class="row"><label>Project</label><div class="val">' + esc(a.project||'—') + '</div></div>' +
     '<div class="row"><label>Task</label><div class="val">' + esc(a.task||'—') + '</div></div>' +
-    '<div class="row"><label>Model</label><div class="val">' + esc(a.model||'—') + '</div></div>' +
-    depthHtml +
-    (a.last_seen ? '<div class="row"><label>Last Seen</label><div class="val">' + timeAgo(a.last_seen) + '</div></div>' : '') +
+    '<div class="row"><label>Current Action</label><div class="val">' + esc(a.action||'—') + '</div></div>' +
+
+    // Model info
+    '<div class="row" style="margin-top:8px"><label style="color:var(--green);text-transform:uppercase;font-size:9px">Model</label><div class="val"></div></div>' +
+    '<div class="row"><label>Model</label><div class="val">' + esc(a.model||'—');
+    if (a.model_tier) h += ' <span class="tier-badge t' + a.model_tier + '">T' + a.model_tier + '</span>';
+    if (a.model_provider) h += ' <span style="font-size:9px;color:var(--text-dim)">(' + esc(a.model_provider) + ')</span>';
+    h += '</div></div>' +
+
+    // Timing & depth
+    '<div class="row" style="margin-top:8px"><label style="color:var(--green);text-transform:uppercase;font-size:9px">Timing</label><div class="val"></div></div>' +
+    '<div class="row"><label>Elapsed</label><div class="val">' + esc(elapsed) + '</div></div>' +
+    '<div class="row"><label>Started</label><div class="val" style="font-size:10px;font-family:var(--font)">' + esc(a.session_started_at ? a.session_started_at.slice(0,19).replace('T',' ') : '—') + '</div></div>' +
+    '<div class="row"><label>Last Update</label><div class="val" style="font-size:10px;font-family:var(--font)">' + esc(a.timestamp ? a.timestamp.slice(0,19).replace('T',' ') : '—') + '</div></div>' +
+    '<div class="row"><label>Depth</label><div class="val">' + (a.subagent_depth||0) + ' sub-agents' + (a.parent_depth ? ' (parent: ' + a.parent_depth + ')' : '') + '</div></div>' +
+
+    // Current file
+    (a.current_file ? '<div class="row" style="margin-top:8px"><label style="color:var(--green);text-transform:uppercase;font-size:9px">File</label><div class="val"></div></div>' +
+      '<div class="row"><label>Current File</label><div class="val" style="font-family:var(--font);font-size:10px;color:var(--yellow)">' + esc(a.current_file) + '</div></div>' : '') +
+
+    // Error
+    (a.last_error ? '<div class="row" style="margin-top:8px"><label style="color:var(--red)">Error</label><div class="val" style="color:var(--red)">' + esc(a.last_error) + '</div></div>' : '') +
+
+    // Token usage
+    (tokenUsage.total ? '<div class="row" style="margin-top:8px"><label style="color:var(--green);text-transform:uppercase;font-size:9px">Tokens</label><div class="val"></div></div>' +
+      '<div class="row"><label>Input</label><div class="val">' + fmt(tokenUsage.input||0) + '</div></div>' +
+      '<div class="row"><label>Output</label><div class="val">' + fmt(tokenUsage.output||0) + '</div></div>' +
+      '<div class="row"><label>Total</label><div class="val">' + fmt(tokenUsage.total||0) + '</div></div>' : '') +
+
+    // Session key
+    (a.session_key ? '<div class="row" style="margin-top:8px"><label style="color:var(--green);text-transform:uppercase;font-size:9px">Session</label><div class="val"></div></div>' +
+      '<div class="row"><label>Session Key</label><div class="val" style="font-size:10px;font-family:var(--font)">' + esc(a.session_key) + '</div></div>' : '') +
+    '<div class="row"><label>Reason</label><div class="val" style="font-size:10px">' + esc(a.reason||'—') + '</div></div>' +
     '</div>';
+
+  // Touched files list
+  if (files.length > 0) {
+    h += '<div style="margin-top:12px"><strong style="font-size:11px;color:var(--cyan);text-transform:uppercase;letter-spacing:.5px">📁 Touched Files (' + files.length + ')</strong>' +
+      '<div style="max-height:120px;overflow-y:auto;border:1px solid var(--border);border-radius:3px;margin-top:4px;padding:2px 0">';
+    for (const f of files) {
+      h += '<div style="padding:3px 8px;font-size:10px;font-family:var(--font);border-bottom:1px solid rgba(48,54,61,.3);color:var(--yellow)">' + esc(f) + '</div>';
+    }
+    h += '</div></div>';
+  }
+
+  // Action history
+  if (history.length > 0) {
+    h += '<div style="margin-top:12px"><strong style="font-size:11px;color:var(--cyan);text-transform:uppercase;letter-spacing:.5px">📋 Action History (' + history.length + ')</strong>' +
+      '<div style="max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:3px;margin-top:4px">';
+    for (const ev of history) {
+      const ts = ev.ts ? ev.ts.slice(11,19) : '';
+      const fileInfo = ev.file ? ' <span style="color:var(--yellow);font-size:9px">[' + esc(ev.file) + ']</span>' : '';
+      h += '<div style="padding:3px 8px;font-size:10px;font-family:var(--font);border-bottom:1px solid rgba(48,54,61,.3)">' +
+        '<span style="color:var(--text-dim);margin-right:6px">' + esc(ts) + '</span>' +
+        '<span style="color:var(--text)">' + esc(ev.action) + '</span>' + fileInfo + '</div>';
+    }
+    h += '</div></div>';
+  }
+
   openModal(h);
 }
 
@@ -1537,6 +1964,234 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }, 30000);
 });
+
+/* ═══════════════════════════════════════════════════════════════
+   LIVE CHAT — SSE + session selector + send
+   ═══════════════════════════════════════════════════════════════ */
+let CHAT_SESSIONS = {};
+let CHAT_SELECTED_SESSION = null;
+let CHAT_PENDING_SESSION = null;
+let CHAT_SSE = null;
+
+function chatEscape(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
+
+function refreshChatSessions() {
+  const sel = document.getElementById('chatSessionSelect');
+  if (!sel) return;
+  // Refresh from SSE data
+  const sessions = DS?.all?.sessions || [];
+  const currentlyLive = {};
+  sessions.forEach(s => {
+    if (s.key && s.displayName && s.model) {
+      currentlyLive[s.key] = s;
+    }
+  });
+  // If SSE has more data, merge
+  if (Object.keys(CHAT_SESSIONS).length) {
+    for (const [k, v] of Object.entries(CHAT_SESSIONS)) {
+      if (!currentlyLive[k]) {
+        currentlyLive[k] = v; // keep stale sessions viewable
+      }
+    }
+  }
+  CHAT_SESSIONS = currentlyLive;
+
+  // Rebuild dropdown preserving selection
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">— Select a session —</option>';
+  const entries = Object.entries(CHAT_SESSIONS).sort((a, b) => {
+    // live first, then by model
+    const aLive = (DS?.all?.sessions || []).find(s => s.key === a[0]) ? 0 : 1;
+    const bLive = (DS?.all?.sessions || []).find(s => s.key === b[0]) ? 0 : 1;
+    if (aLive !== bLive) return aLive - bLive;
+    return (a[1].displayName || '').localeCompare(b[1].displayName || '');
+  });
+
+  entries.forEach(([key, s]) => {
+    const live = (DS?.all?.sessions || []).find(s2 => s2.key === key) ? '● ' : '○ ';
+    const opt = document.createElement('option');
+    opt.value = key;
+    opt.textContent = live + (s.displayName || 'Unnamed') + ' — ' + (s.model || '?');
+    sel.appendChild(opt);
+  });
+
+  if (prev && CHAT_SESSIONS[prev]) sel.value = prev;
+  // Auto-select pending session (set by selectChatSession from project view)
+  if (CHAT_PENDING_SESSION && CHAT_SESSIONS[CHAT_PENDING_SESSION]) {
+    sel.value = CHAT_PENDING_SESSION;
+    CHAT_PENDING_SESSION = null;
+    // Don't auto-trigger switch, the selector's onchange does that
+  }
+}
+
+function switchChatSession() {
+  const sel = document.getElementById('chatSessionSelect');
+  const key = sel?.value || '';
+  const msgs = document.getElementById('chatMessages');
+  const info = document.getElementById('chatInfo');
+  const btn = document.getElementById('chatSendBtn');
+
+  if (!key) {
+    CHAT_SELECTED_SESSION = null;
+    if (msgs) msgs.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-dim)">Select a session to view its conversation</div>';
+    if (info) info.style.display = 'none';
+    if (btn) btn.disabled = true;
+    return;
+  }
+
+  CHAT_SELECTED_SESSION = key;
+  if (btn) btn.disabled = false;
+  const s = CHAT_SESSIONS[key] || {};
+  if (info) {
+    info.style.display = 'block';
+    info.innerHTML = '<strong>' + chatEscape(s.displayName || 'Unnamed') + '</strong> &middot; ' +
+      chatEscape(s.model || '?') + ' &middot; Status: ' + (s.status || '?');
+  }
+  if (msgs) msgs.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-dim)">Loading history...</div>';
+  chatFetchHistory(key);
+}
+
+async function chatFetchHistory(sessionKey) {
+  try {
+    const r = await fetch('/api/chat/history', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({sessionKey})
+    });
+    const data = await r.json();
+    if (data.ok && data.messages) {
+      chatRenderMessages(data.messages);
+    } else {
+      const msgs = document.getElementById('chatMessages');
+      if (msgs) msgs.innerHTML = '<div style="text-align:center;padding:20px;color:var(--red)">Failed to load history: ' +
+        chatEscape(data.error || 'Unknown error') + '</div>';
+    }
+  } catch(e) {
+    const msgs = document.getElementById('chatMessages');
+    if (msgs) msgs.innerHTML = '<div style="text-align:center;padding:20px;color:var(--red)">Connection error</div>';
+  }
+}
+
+function chatRenderMessages(messages) {
+  const container = document.getElementById('chatMessages');
+  if (!container) return;
+  if (!messages || !messages.length) {
+    container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-dim)">No messages yet. Say hello!</div>';
+    return;
+  }
+  let h = '';
+  const seen = new Set();
+  messages.forEach(m => {
+    if (!m.content || !m.role) return;
+    // Dedup messages with same content + ts
+    const dedupKey = m.role + '|' + m.ts + '|' + (m.content || '').slice(0, 40);
+    if (seen.has(dedupKey)) return;
+    seen.add(dedupKey);
+
+    const role = m.role === 'user' ? 'user' : m.role === 'system' ? 'system' : 'assistant';
+    const ts = m.ts ? new Date(m.ts).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'}) : '';
+    const content = chatEscape(m.content || '').replace(/\n/g, '<br>');
+    h += '<div class="msg-row ' + role + '"><div class="msg-bubble ' + role + '">' +
+      '<div class="msg-content">' + content + '</div>' +
+      (ts ? '<div class="msg-ts">' + ts + '</div>' : '') +
+      '</div></div>';
+  });
+  container.innerHTML = h || '<div style="text-align:center;padding:40px;color:var(--text-dim)">No real messages yet</div>';
+  container.scrollTop = container.scrollHeight;
+}
+
+function chatHandleKey(ev) {
+  if (ev.key === 'Enter' && !ev.shiftKey) {
+    ev.preventDefault();
+    chatSend();
+  }
+}
+
+async function chatSend() {
+  const input = document.getElementById('chatInput');
+  const btn = document.getElementById('chatSendBtn');
+  const msg = input?.value?.trim();
+  if (!msg || !CHAT_SELECTED_SESSION) return;
+  if (btn) btn.disabled = true;
+
+  try {
+    const r = await fetch('/api/chat/send', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({sessionKey: CHAT_SELECTED_SESSION, message: msg})
+    });
+    const data = await r.json();
+    if (data.ok) {
+      if (input) input.value = '';
+      const status = document.getElementById('chatStatus');
+      if (status) status.textContent = '✓ Sent at ' + new Date().toLocaleTimeString();
+      // Refresh history after sending
+      setTimeout(() => chatFetchHistory(CHAT_SELECTED_SESSION), 500);
+    } else {
+      const status = document.getElementById('chatStatus');
+      if (status) status.textContent = '✗ ' + (data.error || 'Send failed');
+    }
+  } catch(e) {
+    const status = document.getElementById('chatStatus');
+    if (status) status.textContent = '✗ Network error';
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+async function selectChatSession(key) {
+  // Switch to Chat tab, select a specific session
+  const tabBtn = document.querySelector('.tab-btn[data-tab="chat"]');
+  if (tabBtn) tabBtn.click();
+  // Mark for auto-selection after sessions load
+  CHAT_PENDING_SESSION = key;
+  // If sessions already loaded, select immediately
+  if (Object.keys(CHAT_SESSIONS || {}).length > 0) {
+    const sel = document.getElementById('chatSessionSelect');
+    if (sel.querySelector('option[value="' + chatEscape(key) + '"]')) {
+      sel.value = key;
+      switchChatSession();
+    }
+  }
+}
+
+function chatTabActivated() {
+  refreshChatSessions();
+  // Also start SSE for live session updates
+  if (CHAT_SSE) { CHAT_SSE.close(); CHAT_SSE = null; }
+  CHAT_SSE = new EventSource('/api/sse/live-sessions');
+  CHAT_SSE.onmessage = (ev) => {
+    try {
+      const d = JSON.parse(ev.data);
+      if (d._meta) {
+        // Update session list
+        const status = document.getElementById('chatStatus');
+        if (status) status.textContent = '🟢 Live (' + d._meta.sessionCount + ' sessions)';
+      }
+      if (d.sessions && d.sessions.length) {
+        // Update DS.all.sessions from SSE data
+        if (!DS.all) DS.all = {};
+        DS.all.sessions = d.sessions.map(s => ({
+          key: s.key,
+          displayName: s.displayName || 'Unnamed',
+          model: s.model || '?',
+          status: s.status || '?'
+        }));
+        refreshChatSessions();
+        // Auto-refresh history for currently selected session
+        if (CHAT_SELECTED_SESSION) {
+          const stillLive = d.sessions.find(s => s.key === CHAT_SELECTED_SESSION);
+          if (stillLive) chatFetchHistory(CHAT_SELECTED_SESSION);
+        }
+      }
+    } catch(e) { /* ignore parse errors */ }
+  };
+  CHAT_SSE.onerror = () => {
+    const status = document.getElementById('chatStatus');
+    if (status) status.textContent = '🔴 SSE disconnected — reconnecting...';
+  };
+}
+
 </script>
 </body>
 </html>

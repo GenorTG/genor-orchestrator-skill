@@ -25,6 +25,8 @@ metadata:
 6. **Document Everything** — Log sessions, decisions, architecture
 7. **Model-Routing Compliance** — All LLM agents MUST consult project routing rules (free-only, disabled, per-project allowlist) before selecting a model or spawning a sub-agent.
 8. **Context First** — Always call `orchestrator_set_context` before project work to enable automation hooks.
+9. **Version Everything** — Every project session gets a versioned git commit before major checkpoints. Use `/genor-git-commit` or auto-tag after QA passes.
+10. **QA Gate** — Every task run spawns a QA subagent (if configured) that tests the result before marking complete. No task is "done" until QA passes.
 
 ## Data Directory
 
@@ -290,6 +292,45 @@ Generate: CONTEXT.md (glossary), ADRs (decisions), summary.
 | Full documentation | `./references/README.md` |
 | Onboarding guide | `./references/ONBOARDING.md` |
 | Execution reference | `./references/EXECUTION.md` |
+
+## Versioning & Git Workflow
+
+Every project should follow this versioning discipline:
+
+### When to Commit
+- After each completed task (post-QA if QA configured)
+- Before any significant refactor
+- After documentation updates
+- At the end of every work session
+
+### How to Commit
+1. **Bump version**: Patch (1.2.3 → 1.2.4) for fixes/minor changes; Minor (1.2.3 → 1.3.0) for features; Major (1.2.3 → 2.0.0) for breaking changes.
+2. **Commit message**: `v<version>: <action> — <summary>`
+   - e.g. `v1.2.4: fix — correct session key filter in session_start hook`
+3. **Tag**: Every commit gets a `v<version>` tag.
+4. **Push**: Push commits + tags to remote.
+
+### Using `/genor-git-commit`
+The plugin slash command `/genor-git-commit` automates this:
+- Detects the current project from orchestrator context
+- Stages all changes (`git add -A`)
+- Reads version from `package.json`, bumps patch
+- Commits with auto-generated message
+- Tags and pushes
+
+### Manual Git Commands
+When auto-commit isn't desired (e.g. during active development), use:
+```bash
+git add -A && git commit -m "wip: desc"
+```
+Then squash before final commit.
+
+### Docs Must Match Reality
+After every major change or before pushing:
+1. Run `git diff --stat` to check what changed
+2. Update README, SKILL.md, or any docs that reference changed behavior
+3. Run lint/checks on docs if available
+4. Only push when docs are accurate
 | Debugging guide | `./references/DEBUGGING.md` |
 | Fallback tables | `./references/FALLBACKS.md` |
 | Routing table | `./ROUTING.md` |
