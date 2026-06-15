@@ -373,6 +373,36 @@ body{
 .btn-danger{background:transparent;border-color:var(--red);color:var(--red)}
 
 /* ═══════════════════════════════════════════════════════════════
+   SAFEGUARDS & WORKFLOW TAB
+   ═══════════════════════════════════════════════════════════════ */
+.sg-wrap{display:flex;flex-direction:column;flex:1;overflow-y:auto;padding:4px 0}
+.sg-card{background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.sg-card-header{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--text-dim);padding:8px 12px;border-bottom:1px solid var(--border)}
+.sg-card-body{padding:16px 12px}
+.sg-config-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.sg-config-item{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:4px}
+.sg-config-label{font-size:12px;color:var(--text)}
+.sg-config-val{font-size:11px;color:var(--cyan);font-family:var(--font)}
+.sg-table{width:100%;border-collapse:collapse;font-size:11px}
+.sg-table th{text-align:left;padding:5px 8px;color:var(--text-dim);border-bottom:1px solid var(--border);font-weight:500;position:sticky;top:0;background:var(--bg-alt);z-index:1}
+.sg-table td{padding:4px 8px;border-bottom:1px solid rgba(48,54,61,.3)}
+.sg-table tr:hover td{background:rgba(88,166,255,.02)}
+.sg-cell-name{font-weight:600;color:var(--text-bright)}
+.sg-retry-badge{display:inline-block;background:var(--border);padding:0 6px;border-radius:8px;font-size:10px;font-weight:600;color:var(--text)}
+.sg-retry-badge.sg-retry-active{background:rgba(210,153,34,.2);color:var(--yellow)}
+.sg-phase-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;margin-bottom:8px}
+.sg-phase-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.sg-phase-info{font-size:11px;line-height:1.8}
+.sg-phase-row{display:flex;gap:8px;padding:2px 0;border-bottom:1px solid rgba(48,54,61,.15)}
+.sg-phase-row:last-child{border-bottom:none}
+.sg-phase-row .label{color:var(--text-dim);width:70px;flex-shrink:0;opacity:.7}
+.sg-phase-row .value{color:var(--text);display:flex;align-items:center}
+.sg-progress-bar{width:100px;height:6px;background:var(--border);border-radius:3px;overflow:hidden;display:inline-block;vertical-align:middle}
+.sg-progress-fill{height:100%;background:var(--green);border-radius:3px;transition:width .3s ease}
+.sg-event-error td{background:rgba(248,81,73,.04)!important}
+.sg-event-recover td{background:rgba(63,185,80,.04)!important}
+
+/* ═══════════════════════════════════════════════════════════════
    CHAT — message bubbles
    ═══════════════════════════════════════════════════════════════ */
 .msg-row{display:flex;gap:4px;margin-bottom:4px;animation:fadeIn .15s ease}
@@ -460,6 +490,7 @@ input.search:focus{border-color:var(--blue);outline:none}
   <button class="tab-btn" data-tab="chat">💬 Chat</button>
   <button class="tab-btn" data-tab="logs">📋 Logs</button>
   <button class="tab-btn" data-tab="settings">⚙ Settings</button>
+  <button class="tab-btn" data-tab="safeguards">🛡️ Safeguards</button>
   <span class="project-badge" id="projBadge" style="display:none;margin-left:auto;padding:2px 10px;font-size:10px;color:var(--cyan);background:rgba(88,166,255,.1);border-radius:10px"></span>
 </div>
 
@@ -652,6 +683,60 @@ input.search:focus{border-color:var(--blue);outline:none}
   <div class="settings-grid" id="settingsGrid"></div>
 </div>
 
+<!-- ─── SAFEGUARDS & WORKFLOW ─── -->
+<div class="tab-pane" id="pane-safeguards">
+  <div class="sg-wrap">
+    <!-- Header -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="title" style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--cyan)">🛡️ Safeguards &amp; Workflow</div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-sm" onclick="loadSafeguards()">↻ Refresh</button>
+      </div>
+    </div>
+
+    <!-- Safeguards Config Card -->
+    <div class="sg-card" id="sgConfigCard">
+      <div class="sg-card-header">⚙️ Safeguards Configuration</div>
+      <div class="sg-card-body" id="sgConfigBody">
+        <div style="text-align:center;padding:30px;color:var(--text-dim)">Loading safeguards config...</div>
+      </div>
+    </div>
+
+    <!-- Workflow Enforcement per Project -->
+    <div class="sg-card" style="margin-top:10px">
+      <div class="sg-card-header">📋 Workflow Enforcement (per project)</div>
+      <div class="sg-card-body" id="sgWorkflowProjects" style="padding:10px">
+        <div style="text-align:center;padding:20px;color:var(--text-dim)">Loading workflow config...</div>
+      </div>
+    </div>
+
+    <!-- Current Agent Phase -->
+    <div class="sg-card" style="margin-top:10px">
+      <div class="sg-card-header">🤖 Current Agent Workflow Phase</div>
+      <div class="sg-card-body" id="sgAgentPhaseBody">
+        <div style="text-align:center;padding:20px;color:var(--text-dim)">Loading agent phase data...</div>
+      </div>
+    </div>
+
+    <!-- Phase History Timeline -->
+    <div class="sg-card" style="margin-top:10px">
+      <div class="sg-card-header">📜 Phase History Timeline</div>
+      <div class="sg-card-body" id="sgTimelineBody">
+        <div style="text-align:center;padding:20px;color:var(--text-dim)">Loading timeline...</div>
+      </div>
+    </div>
+
+    <!-- Safeguard Log -->
+    <div class="sg-card" style="margin-top:10px">
+      <div class="sg-card-header">📋 Safeguard Event Log</div>
+      <div class="sg-card-body" id="sgLogBody">
+        <div style="text-align:center;padding:20px;color:var(--text-dim)">Loading safeguard log...</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 </div> <!-- /main -->
 
 <!-- ═══════════════════ STATUS BAR (BOTTOM) ═══════════════════ -->
@@ -676,6 +761,14 @@ input.search:focus{border-color:var(--blue);outline:none}
 <div class="toast" id="toast"></div>
 
 <script>
+window.__errors = [];
+window.onerror = function(msg, url, line, col, err) {
+  window.__errors.push({msg, url, line, col, stack: err?.stack});
+  return false;
+};
+window.addEventListener('unhandledrejection', function(e) {
+  window.__errors.push({type:'unhandledrejection', reason: e.reason?.message || String(e.reason)});
+});
 /* ═══════════════════════════════════════════════════════════════
    CORE — API client, SSE, state management
    ═══════════════════════════════════════════════════════════════ */
@@ -736,11 +829,32 @@ function toast(msg, type='info') {
 /* ── SSE ── */
 let evtSource = null;
 
+async function refreshAll() {
+  const r = await api('/api/all');
+  if (!r.error) {
+    DS.all = r;
+    DS.config = r.config || {};
+    // Update DS.state from active context (if set)
+    if (r.state && r.state.project) {
+      DS.state = r.state;
+    }
+    updateHeaderStats();
+    updateStatusBar();
+    const pcount = r.projects ? (Array.isArray(r.projects.projects) ? r.projects.projects.length : r.projects.count || 0) : 0;
+  const scount = Array.isArray(r.sessions) ? r.sessions.length : (r.sessions ? (r.sessions.count || 0) : 0);
+  $('hText').textContent = (r.models ? r.models.total : 0) + ' models · ' + pcount + ' projects · ' + scount + ' sessions';
+    $('hDot').className = 'status-dot on';
+  }
+}
+
 function connectSSE() {
   // Poll live-agents.json instead of SSE (Python http.server is single-threaded)
+  // Also poll full /api/all for tab badge updates
   pollLiveAgents();
+  refreshAll();
   // Poll agents every 10s (was 3s — reduced noise)
   setInterval(pollLiveAgents, 10000);
+  setInterval(refreshAll, 30000);
 }
 
 async function pollLiveAgents() {
@@ -752,11 +866,34 @@ async function pollLiveAgents() {
     $('sseStatus').style.color = 'var(--green)';
     $('disconnected').classList.remove('show');
     SSE_RETRIES = 0;
+    // Populate DS.agents so updateHeaderStats has real data
+    DS.agents = data.agents || [];
+    // Also populate DS.state from the first active agent (for status bar)
+    const firstAgent = (data.agents || [])[0];
+    if (firstAgent && firstAgent.project) {
+      DS.state = {
+        project: firstAgent.project,
+        task: firstAgent.task,
+        model: firstAgent.model,
+        agent: firstAgent.agent,
+        action: firstAgent.action,
+        workflow: firstAgent.workflow,
+      };
+    } else if (!DS.state) {
+      DS.state = {};
+    }
     if (data.agents) {
       if (typeof updateHeaderStats === 'function') updateHeaderStats();
     }
-    if (data.active_count !== undefined) {
-      $('sAgents').textContent = data.active_count + '/' + data.agent_count;
+    if (typeof updateStatusBar === 'function') updateStatusBar();
+    $('sAgents').textContent = (data.active_count || 0) + '/' + (data.agent_count || 0);
+    $('hcAgents').textContent = data.active_count || 0;
+    // Update tab badges while we're at it
+    if (DS.all) {
+      const m = DS.all.models || {};
+      const s = DS.all.sessions || [];
+      $('tbModels').textContent = m.total || 0;
+      $('tbGateway').textContent = Array.isArray(s) ? s.length : (s.count || 0);
     }
     // Simulate activity event from the live-agents data
     const ev = [{
@@ -768,6 +905,8 @@ async function pollLiveAgents() {
     }];
     DS.activity = [...ev, ...(DS.activity || [])].slice(0, 500);
     if (typeof renderActivityFeed === 'function') renderActivityFeed();
+    // Don't override hText here — initLoad/refreshAll set it from /api/all
+    $('hDot').className = 'status-dot on';
   } catch(err) {
     $('sseStatus').textContent = 'offline';
     $('sseStatus').style.color = 'var(--red)';
@@ -851,6 +990,23 @@ async function initLoad() {
   DS.all = r;
   DS.config = r.config || {};
   DS.state = r.state || {};
+  // Populate DS.agents from live_agents data (included in /api/all)
+  if (r.live_agents && r.live_agents.agents) {
+    DS.agents = r.live_agents.agents;
+  }
+  // Ensure DS.state has project info for status bar
+  if (!DS.state || !DS.state.project) {
+    const firstAgent = (DS.agents || [])[0];
+    if (firstAgent && firstAgent.project) {
+      DS.state = {
+        project: firstAgent.project,
+        task: firstAgent.task,
+        model: firstAgent.model,
+        agent: firstAgent.agent,
+        workflow: firstAgent.workflow,
+      };
+    }
+  }
   DS.activity = (r.logs && r.logs.logs) ? r.logs.logs.reverse().slice(-200) : [];
 
   updateStatusBar();
@@ -863,12 +1019,13 @@ async function initLoad() {
   loadLogs();
 
   // Update counts in tab buttons
-  $('tbAgents').textContent = (DS.agents||[]).length;
+  if ($('tbAgents')) $('tbAgents').textContent = (DS.agents||[]).length;
   if (r.projects) $('tbProjects').textContent = r.projects.count || 0;
   if (r.models) $('tbModels').textContent = r.models.total || 0;
+  const sessCount_init = Array.isArray(r.sessions) ? r.sessions.length : (r.sessions ? (r.sessions.count || 0) : 0);
   $('hText').textContent = (r.models ? r.models.total : 0) + ' models · ' +
-    (r.projects ? r.projects.count : 0) + ' projects · ' +
-    (r.sessions ? r.sessions.count : 0) + ' sessions';
+    (r.projects ? (Array.isArray(r.projects.projects) ? r.projects.projects.length : r.projects.count || 0) : 0) + ' projects · ' +
+    sessCount_init + ' sessions';
 
   connectSSE();
 }
@@ -902,6 +1059,10 @@ function updateHeaderStats() {
     $('hcModels').textContent = m.active || 0;
     $('hcProjects').textContent = projCount;
     $('hcSessions').textContent = sessCount;
+    // Update tab badges too
+    $('tbModels').textContent = m.total || 0;
+    $('tbProjects').textContent = projCount;
+    $('tbGateway').textContent = sessCount;
   }
 }
 
@@ -922,6 +1083,7 @@ document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
     if (pane) pane.classList.add('active');
     if (tab === 'logs') loadLogs();
     if (tab === 'gateway') loadGateway();
+    if (tab === 'safeguards') loadSafeguards();
     if (tab === 'chat') chatTabActivated();
   });
 });
@@ -1041,7 +1203,7 @@ function renderAgents() {
       depthHtml + '</div>';
   }
   grid.innerHTML = html || '<div class="agent-empty"><span class="big">🔍</span>No agents match search.</div>';
-  $('tbAgents').textContent = filtered.length;
+  if ($('tbAgents')) $('tbAgents').textContent = filtered.length;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -2192,6 +2354,195 @@ function chatTabActivated() {
   };
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   SAFEGUARDS & WORKFLOW TAB
+   ═══════════════════════════════════════════════════════════════ */
+
+// Load all safeguards data
+async function loadSafeguards() {
+  await Promise.all([
+    loadSafeguardConfig(),
+    loadWorkflowProjects(),
+    loadAgentPhase(),
+    loadSafeguardLog(),
+  ]);
+}
+
+async function loadSafeguardConfig() {
+  const body = $('sgConfigBody');
+  try {
+    const r = await api('/api/config');
+    if (r.error) { body.innerHTML = '<div style="text-align:center;padding:20px;color:var(--red)">Error: ' + esc(r.error) + '</div>'; return; }
+    const sg = r.safeguards || {};
+    body.innerHTML = '<div class="sg-config-grid">' +
+      '<div class="sg-config-item">' +
+        '<span class="sg-config-label">Enabled</span>' +
+        '<div class="toggle-sw ' + (sg.enabled ? 'on' : '') + '" onclick="sgToggleConfig(\'enabled\')"></div>' +
+      '</div>' +
+      '<div class="sg-config-item">' +
+        '<span class="sg-config-label">Auto-Recover</span>' +
+        '<div class="toggle-sw ' + (sg.auto_recover ? 'on' : '') + '" onclick="sgToggleConfig(\'auto_recover\')"></div>' +
+      '</div>' +
+      '<div class="sg-config-item">' +
+        '<span class="sg-config-label">Idle Timeout</span>' +
+        '<span class="sg-config-val">' + fmtMs(sg.idle_timeout_ms || 0) + '</span>' +
+      '</div>' +
+      '<div class="sg-config-item">' +
+        '<span class="sg-config-label">Stuck Timeout</span>' +
+        '<span class="sg-config-val">' + fmtMs(sg.stuck_timeout_ms || 0) + '</span>' +
+      '</div>' +
+      '<div class="sg-config-item">' +
+        '<span class="sg-config-label">Error Threshold</span>' +
+        '<span class="sg-config-val">' + (sg.max_errors_before_escalation || 0) + '</span>' +
+      '</div>' +
+      '<div class="sg-config-item">' +
+        '<span class="sg-config-label">Tick Interval</span>' +
+        '<span class="sg-config-val">' + fmtMs(sg.tick_interval_ms || 0) + '</span>' +
+      '</div>' +
+    '</div>';
+  } catch(e) {
+    body.innerHTML = '<div style="text-align:center;padding:20px;color:var(--red)">Error: ' + esc(e.message) + '</div>';
+  }
+}
+
+async function loadWorkflowProjects() {
+  const el = $('sgWorkflowProjects');
+  try {
+    const r = await api('/api/config');
+    if (r.error) { el.innerHTML = '<div style="color:var(--red)">Error: ' + esc(r.error) + '</div>'; return; }
+    const projects = r.projects || {};
+    const names = Object.keys(projects);
+    if (!names.length) {
+      el.innerHTML = '<div style="color:var(--text-dim);padding:10px">No projects configured.</div>';
+      return;
+    }
+    let html = '<table class="sg-table"><thead><tr><th>Project</th><th>Workflow</th><th>QA</th><th>Auto-Commit</th><th>QA Retries</th><th>Skip Phases</th></tr></thead><tbody>';
+    for (const name of names) {
+      const wf = projects[name].workflow || {};
+      html += '<tr>' +
+        '<td class="sg-cell-name">' + esc(name) + '</td>' +
+        '<td>' + statusBadge(wf.enabled !== false) + '</td>' +
+        '<td>' + statusBadge(wf.include_qa !== false) + '</td>' +
+        '<td>' + statusBadge(wf.auto_commit !== false) + '</td>' +
+        '<td><span class="sg-retry-badge">' + (wf.qa_retries || 0) + '</span></td>' +
+        '<td style="color:var(--text-dim);font-size:10px">' + ((wf.skip_phases||[]).length ? (wf.skip_phases||[]).join(', ') : '—') + '</td>' +
+      '</tr>';
+    }
+    html += '</tbody></table>';
+    el.innerHTML = html;
+  } catch(e) {
+    el.innerHTML = '<div style="color:var(--red)">Error: ' + esc(e.message) + '</div>';
+  }
+}
+
+async function loadAgentPhase() {
+  const el = $('sgAgentPhaseBody');
+  try {
+    const r = await api('/api/live-agents');
+    if (r.error) { el.innerHTML = '<div style="color:var(--red)">Error</div>'; return; }
+    const agents = r.agents || [];
+    if (!agents.length) {
+      el.innerHTML = '<div style="color:var(--text-dim);padding:10px">No live agents.</div>';
+      return;
+    }
+    let html = '';
+    for (const a of agents) {
+      const name = a.agent || 'Agent';
+      const status = a.agent_status || '—';
+      const phase = a.workflow_current_phase || '—';
+      const progress = a.workflow_progress || 0;
+      const qaRetries = a.qa_retries || 0;
+      const qaMax = a.qa_max_retries || 3;
+      const project = a.project || '—';
+      const task = a.task || '—';
+      const elapsed = a.elapsed || '—';
+      const action = a.action || '—';
+      
+      html += '<div class="sg-phase-card">' +
+        '<div class="sg-phase-top"><strong style="color:var(--text-bright)">' + esc(name) + '</strong>' +
+        '<span class="status-badge ' + agentStatusClass(status) + '">' + esc(status) + '</span></div>' +
+        '<div class="sg-phase-info">' +
+        '<div class="sg-phase-row"><span class="label">Project</span><span class="value">' + esc(project) + '</span></div>' +
+        '<div class="sg-phase-row"><span class="label">Task</span><span class="value">' + esc(task) + '</span></div>' +
+        '<div class="sg-phase-row"><span class="label">Phase</span><span class="value">' + esc(phase) + '</span></div>' +
+        '<div class="sg-phase-row"><span class="label">Progress</span><span class="value"><div class="sg-progress-bar"><div class="sg-progress-fill" style="width:' + Math.max(0,Math.min(100,progress)) + '%"></div></div><span style="font-size:10px;color:var(--text-dim);margin-left:6px">' + Math.round(progress) + '%</span></span></div>' +
+        '<div class="sg-phase-row"><span class="label">Action</span><span class="value">' + esc(action) + '</span></div>' +
+        '<div class="sg-phase-row"><span class="label">Elapsed</span><span class="value">' + esc(elapsed) + '</span></div>' +
+        '<div class="sg-phase-row"><span class="label">QA Retries</span><span class="value">' +
+          '<span class="sg-retry-badge ' + (qaRetries > 0 ? 'sg-retry-active' : '') + '">' + qaRetries + '</span>' +
+          ' <span style="color:var(--text-dim);font-size:10px">/ ' + qaMax + '</span></span></div>' +
+        '</div></div>';
+    }
+    el.innerHTML = html;
+  } catch(e) {
+    el.innerHTML = '<div style="color:var(--red)">Error: ' + esc(e.message) + '</div>';
+  }
+}
+
+function statusBadge(on) {
+  return on ? '<span style="color:var(--green);font-size:11px;font-weight:600">✓ ON</span>' : '<span style="color:var(--red);font-size:11px">✗ OFF</span>';
+}
+
+function fmtMs(ms) {
+  if (!ms) return '—';
+  if (ms >= 3600000) return Math.round(ms/3600000) + 'h ' + Math.round((ms%3600000)/60000) + 'm';
+  if (ms >= 60000) return Math.round(ms/60000) + 'm ' + Math.round((ms%60000)/1000) + 's';
+  return Math.round(ms/1000) + 's';
+}
+
+async function loadSafeguardLog() {
+  const el = $('sgLogBody');
+  try {
+    const r = await api('/api/safeguard-log');
+    const entries = r.entries || [];
+    if (!entries.length) {
+      el.innerHTML = '<div style="color:var(--text-dim);padding:10px">No safeguard events recorded yet.</div>';
+      return;
+    }
+    let html = '<table class="sg-table"><thead><tr><th>Timestamp</th><th>Event</th><th>Details</th></tr></thead><tbody>';
+    for (const e of entries) {
+      const evClass = e.event && e.event.toLowerCase().includes('error') ? 'sg-event-error' :
+                      e.event && e.event.toLowerCase().includes('recover') ? 'sg-event-recover' : '';
+      html += '<tr class="' + evClass + '"><td style="color:var(--text-dim);font-size:10px;white-space:nowrap">' + esc(e.timestamp || '') + '</td>' +
+        '<td style="font-weight:600">' + esc(e.event || '') + '</td>' +
+        '<td style="color:var(--text-dim);font-size:10px">' + esc(e.details || '') + '</td></tr>';
+    }
+    html += '</tbody></table>';
+    el.innerHTML = html;
+  } catch(e) {
+    el.innerHTML = '<div style="color:var(--red)">Error: ' + esc(e.message) + '</div>';
+  }
+}
+
+// Toggle safeguard config
+async function sgToggleConfig(key) {
+  try {
+    const r = await api('/api/config');
+    if (r.error) { toast('Failed to load config', 'error'); return; }
+    const sg = r.safeguards || {};
+    sg[key] = !sg[key];
+    const resp = await api('/api/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ safeguards: sg })
+    });
+    if (resp.ok) {
+      toast(key + ' toggled to ' + sg[key], 'success');
+      loadSafeguardConfig();
+    } else {
+      toast('Toggle failed', 'error');
+    }
+  } catch(e) {
+    toast('Error: ' + e.message, 'error');
+  }
+}
+
+// ══ BOOT: load all data on page load ══
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initLoad);
+} else {
+  initLoad();
+}
 </script>
 </body>
 </html>

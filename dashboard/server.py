@@ -485,8 +485,17 @@ class Handler(http.server.BaseHTTPRequestHandler):
                         "live_connected": live["_meta"]["connected"], "live_updated": live["_meta"]["updatedAt"]}
                 except:
                     pass
-            self.send_json({**live_sessions_data, "models": load_models(),
-                "prices": parse_price_log(), "projects": projects, "config": cfg,
+            # Load live_agents data for dashboard state
+            la_data = {"agents": [], "agent_count": 0, "active_count": 0}
+            la_file = os.path.join(DATA_DIR, "live-agents.json")
+            if os.path.exists(la_file):
+                try:
+                    with open(la_file) as f:
+                        la_data = json.load(f)
+                except:
+                    pass
+            self.send_json({**live_sessions_data, "live_agents": la_data, "state": (la_data.get("agents") or [None])[0] or {},
+                "models": load_models(), "prices": parse_price_log(), "projects": projects, "config": cfg,
                 "status": {"nightly_price_check": "Configured (2 AM)",
                     "price_log_exists": os.path.exists(os.path.join(DATA_DIR, "price_changes.log")),
                     "data_dir": DATA_DIR, "free_only_mode": cfg.get("free_only_mode", False),
@@ -657,6 +666,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
             cfg = load_config()
             for key in ("free_only_mode", "theme", "auto_refresh_seconds", "disabled_models"):
                 if key in data: cfg[key] = data[key]
+            if "safeguards" in data and isinstance(data["safeguards"], dict):
+                cfg_sg = cfg.setdefault("safeguards", {})
+                for sk in ("enabled", "idle_timeout_ms", "stuck_timeout_ms", "max_errors_before_escalation", "auto_recover", "tick_interval_ms"):
+                    if sk in data["safeguards"]: cfg_sg[sk] = data["safeguards"][sk]
             if "projects" in data and isinstance(data["projects"], dict):
                 for pn, pc in data["projects"].items():
                     cfg["projects"].setdefault(pn, {"model_allowlist": [], "free_only": False})
