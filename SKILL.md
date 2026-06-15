@@ -34,7 +34,10 @@ All user data lives in `orchestrator-data/` (set `ORCHESTRATOR_DATA_DIR` to over
 orchestrator-data/
 ├── models.json             — model inventory
 ├── dashboard-config.json   — routing config (free-only, disabled, project allowlists)
-├── session_log.md          — session history table
+├── live-sessions.json      — live gateway session snapshot from bridge
+├── live-agents.json        — current session tracker state (project, model, action, status)
+├── chat-outbox.json        — async message send queue
+├── state.json              — current project state (written from plugin hooks)
 ├── price_changes.log       — price tracking
 ├── MODEL_CATALOG.md        — generated catalog
 ├── logs/                   — structured JSONL logs
@@ -48,7 +51,16 @@ orchestrator-data/
 │       ├── sessions.json
 │       └── ...
 └── sessions/               — detailed session state files
+
+> **Note:** `session_log.md` has been replaced by live bridge data and `projects/<name>/sessions.json` per-project.
 ```
+
+### Live Agent Tracking
+The plugin hooks write `live-agents.json` on every major event (session_start/end, context set, model resolve, prompt build, agent end). This gives the dashboard real-time visibility into:
+- Which project the agent is currently working on
+- What action it's performing
+- Which model it's using
+- Session key, uptime, token usage
 
 ## Architecture
 
